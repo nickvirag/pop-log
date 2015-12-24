@@ -1,0 +1,30 @@
+<% layout('layout') -%>
+<title>shitlog</title>
+<form action="/api/newClassInstance" method="post">
+<select name="trimester">
+	<option value="0">Spring</option>
+	<option value="1">Summer</option>
+	<option value="2">Fall</option>
+</select><select name="year">
+<% yearOptions.forEach(function(yearOption){ %>
+	<option value="<%= yearOption %>"><%= yearOption %></option>
+<% }); %>
+</select>
+<br>
+<br>
+<select name="classCode">
+<% courseOptions.forEach(function(courseOption){ %>
+	<option value="<%= courseOption %>"><%= courseOption %></option>
+<% }); %>
+</select><input type="text" name="classIdentifier" value="2036">
+<br>
+Grade:<br>
+<select name="grade">
+<% gradeOptions.forEach(function(gradeOption, x){ %>
+	<option value="<%= x %>"><%= gradeOption %></option>
+<% }); %>
+</select>
+<input type="hidden" name="user" value="<%= user._id %>">
+<br><br>
+<input type="submit" value="Submit">
+</form>

@@ -1,0 +1,39 @@
+<% layout('layout') %>
+<script>
+  $(function() {
+    $( '.gradeSelector' ).change(function() {
+      var self = this;
+      $.ajax({
+        url: '/api/updateClassInstance',
+        method: 'PUT',
+        data: 'grade=' + $(self).val() + '&id=' + $(self).attr('id'),
+        success: function(data) {}
+      });
+    });
+  });
+</script>
+<p><%= isNotUser ? user.displayName : '' %></p>
+<% semesters.forEach(function(semester){ %>
+Semester <%= semester.trimester %> <%= semester.year %>
+<table>
+  <tr>
+    <th>Code</th>
+    <th>Identifier</th>
+    <th>Grade</th>
+  </tr>
+  <% semester.classes.forEach(function(fClass){ -%>
+  <tr>
+    <td><%= fClass.classCode %></td>
+    <td><%= fClass.classIdentifier %></td>
+    <td><select name="grade" class="gradeSelector" id="<%= fClass.id %>">
+      <% gradeOptions.forEach(function(gradeOption, x){ %>
+      <option value="<%= x %>" <% if (x == fClass.grade) { %>selected="selected"<% } %>><%= gradeOption %></option>
+      <% }); %>
+    </select></td>
+  </tr>
+  <% }); %>
+</table>
+<br>
+<br>
+<% }); %>
+<a href="/class/new">Add a class</a>

@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>shitlog</title>
+		<script src="/javascripts/jquery-2.1.4.min.js"></script>
+	</head>
+	<body>
+		<p>
+			💩 |
+			<% if (!user) { %>
+			<a href="/">Home</a> | <a href="/auth/google">Log In</a>
+			<% } else { %>
+			<a href="/user"><%= user.displayName %></a> | <a href="/logout">Log Out</a>
+			<% } %>
+		</p>
+		<%- body %>
+	</body>
+</html>
