@@ -1,7 +1,19 @@
 <% layout('layout') %>
 <script>
   $(function() {
-    $( '.gradeSelector' ).change(function() {
+    $('#helpClassDialog').dialog({
+      autoOpen: false
+    });
+
+    $('#dropClassDialog').dialog({
+      autoOpen: false
+    });
+
+    $('#newClassDialog').dialog({
+      autoOpen: false
+    });
+
+    $('.gradeSelector').change(function() {
       var self = this;
       $.ajax({
         url: '/api/updateClassInstance',
@@ -10,9 +22,85 @@
         success: function(data) {}
       });
     });
+
+    var fourDigitNumberInput = function (e) {
+      if ($.inArray(e.keyCode, [46, 8, 9, 27, 13]) !== -1
+        || (e.keyCode == 65 && e.ctrlKey === true)
+        || (e.keyCode == 67 && e.ctrlKey === true)
+        || (e.keyCode == 88 && e.ctrlKey === true)
+        || (e.keyCode >= 35 && e.keyCode <= 39)) {
+          return;
+      }
+      if ($(this).val().length == 4 || ((e.shiftKey || (e.keyCode < 48 || e.keyCode > 57)) && (e.keyCode < 96 || e.keyCode > 105))) {
+        e.preventDefault();
+      }
+    };
+
+    $('#newClassIdentifier').keydown(fourDigitNumberInput);
+    $('#newClassCRN').keydown(fourDigitNumberInput);
+
+    $('.gradeHelpButton').click(function(event) {
+      $('#helpClassID').val($(this).attr('id'));
+      var self = this;
+      $.ajax({
+        url: '/api/getClassHelp',
+        method: 'GET',
+        data: 'user=<%= user._id %>&id=' + $(self).attr('id'),
+        success: function(data) {
+          $('#helpClassDialog').dialog('open');
+          $('#helpClassDialog').text(data);
+        }
+      });
+      event.preventDefault();
+      event.stopPropagation();
+    });
+
+    $('.gradeDropButton').click(function(event) {
+      $('#dropClassDialog').dialog('open');
+      $('#dropClassID').val($(this).attr('id'));
+      event.preventDefault();
+      event.stopPropagation();
+    });
+
+    $('#newClassButton').click(function(event) {
+      $('#newClassDialog').dialog('open');
+      event.preventDefault();
+      event.stopPropagation();
+    });
+
+    $('#dropClassSubmit').click(function(event) {
+      $.ajax({
+        url: '/api/dropClassInstance',
+        method: 'POST',
+        data: 'excuse=' + $('#dropClassExcuse').val() + '&id=' + $('#dropClassID').val(),
+        success: function(data) {
+          $('#dropClassDialog').dialog('close');
+        }
+      });
+      event.preventDefault();
+      event.stopPropagation();
+    });
+
+    // data.trimester && data.year && data.classCode && data.classIdentifier && data.user
+
+    $('#newClassSubmit').click(function(event) {
+      $.ajax({
+        url: '/api/newClassInstance',
+        method: 'POST',
+        data: 'user=<%= user._id %>&trimester=' + $('#newClassTrimester').val()
+          + '&year=' + $('#newClassYear').val()
+          + '&classCode=' + $('#newClassCode').val()
+          + '&classIdentifier=' + $('#newClassIdentifier').val(),
+        success: function(data) {
+          $('#newClassDialog').dialog('close');
+        }
+      });
+      event.preventDefault();
+      event.stopPropagation();
+    });
   });
 </script>
-<p><%= isNotUser ? user.displayName : '' %></p>
+<p><%= isNotUser ? user.displayName + '<br>' : '' %>GPA: <%= user.reportedGPA %></p>
 <% semesters.forEach(function(semester){ %>
 Semester <%= semester.trimester %> <%= semester.year %>
 <table>
@@ -20,6 +108,7 @@ Semester <%= semester.trimester %> <%= semester.year %>
     <th>Code</th>
     <th>Identifier</th>
     <th>Grade</th>
+    <th>Actions</th>
   </tr>
   <% semester.classes.forEach(function(fClass){ -%>
   <tr>
@@ -30,10 +119,51 @@ Semester <%= semester.trimester %> <%= semester.year %>
       <option value="<%= x %>" <% if (x == fClass.grade) { %>selected="selected"<% } %>><%= gradeOption %></option>
       <% }); %>
     </select></td>
+    <td>
+      <a class="gradeHelpButton" id="<%= fClass.id %>" href="#">HELP</a> <a class="gradeDropButton" id="<%= fClass.id %>" href="#">DROP</a>
+    </td>
   </tr>
   <% }); %>
 </table>
 <br>
 <br>
 <% }); %>
-<a href="/class/new">Add a class</a>
+<a id="newClassButton" href="#">Add a class</a>
+
+<div id="newClassDialog" title="New Class">
+  <select id="newClassTrimester">
+  	<option value="0">Spring</option>
+  	<option value="1">Summer</option>
+  	<option value="2">Fall</option>
+  </select>
+  <select id="newClassYear">
+    <% yearOptions.forEach(function(yearOption){ %>
+  	<option value="<%= yearOption %>"><%= yearOption %></option>
+    <% }); %>
+  </select>
+  <br>
+  <select id="newClassCode">
+    <% courseOptions.forEach(function(courseOption){ %>
+  	<option value="<%= courseOption %>"><%= courseOption %></option>
+    <% }); %>
+  </select>
+  <input type="text" id="newClassIdentifier" placeholder="Course number">
+  <input type="text" id="newClassCRN" placeholder="CRN">
+  <br>
+  <br>
+  <a id="newClassSubmit" href="#">New class</a>
+</div>
+
+<div id="helpClassDialog" title="Help">
+  <!-- <input type="hidden" id="dropClassID" value="">
+  Enter reason for dropping class:<br>
+  <input type="text" id="dropClassExcuse"><br>
+  <a id="dropClassSubmit" href="#">Drop class</a> -->
+</div>
+
+<div id="dropClassDialog" title="Drop Class">
+  <input type="hidden" id="dropClassID" value="">
+  Enter reason for dropping class:<br>
+  <input type="text" id="dropClassExcuse"><br>
+  <a id="dropClassSubmit" href="#">Drop class</a>
+</div>

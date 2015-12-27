@@ -13,6 +13,10 @@ var userSchema = new mongoose.Schema({
   lastName: String,
   displayName: String,
   email: String,
+  reportedGPA: {
+    type: Number,
+    default: 0.00
+  },
   isActive: {
     type: Boolean,
     default: true

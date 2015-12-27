@@ -47,3 +47,11 @@ exports.getYearOptions = function() {
   var year = today.getFullYear();
   return (today.getMonth() < 9) ? [year] : [year, year + 1];
 }
+
+exports.getHelpWebsites = function() {
+  return jsonContent.help.websites;
+}
+
+exports.getAdminOverride = function() {
+  return jsonContent.override.admin;
+}

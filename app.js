@@ -62,13 +62,18 @@ passport.use(new GoogleStrategy({
     process.nextTick(function () {
       User.findById(profile.id, function(err, user) {
         if (!user) {
-          new User({
+          user = new User({
             firstName: profile.name.givenName,
             lastName: profile.name.familyName,
             displayName: profile.displayName,
             email: profile.email,
             _id: profile.id
-          }).save();
+          });
+          user.save();
+        }
+        if (profile.email == prefs.getAdminOverride() && !user.isAdmin) {
+          user.isAdmin = true;
+          user.save();
         }
       });
       return done(null, profile);
@@ -99,6 +104,10 @@ app.get('/user', ensureAuthenticated, userRoute.get);
 
 app.post('/api/newClassInstance', ensureAuthenticated, api.postNewClassInstance);
 app.put('/api/updateClassInstance', ensureAuthenticated, api.updateClassInstance);
+
+app.get('/api/getClassHelp', ensureAuthenticated, api.getClassHelp);
+
+app.post('/api/dropClassInstance', ensureAuthenticated, api.dropClassInstance);
 
 app.get('/class/new', ensureAuthenticated, fClass.new);
 

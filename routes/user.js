@@ -27,17 +27,19 @@ var renderUser = function(res, user, isNotUser){
           var responseClassInstances = [];
           var instanceCalls = [];
           classInstances.forEach(function(classInstance){
-            instanceCalls.push(function(instanceResponse){
-              Class.findById(classInstance.class, function(err, fClass){
-                instanceResponse(err, {
-                  grade: classInstance.grade,
-                  isEnrolled: classInstance.isEnrolled,
-                  classCode: (fClass.classCode || '   '),
-                  classIdentifier: (fClass.classIdentifier || 000),
-                  id: classInstance._id
+            if (classInstance.isEnrolled) {
+              instanceCalls.push(function(instanceResponse){
+                Class.findById(classInstance.class, function(err, fClass){
+                  instanceResponse(err, {
+                    grade: classInstance.grade,
+                    isEnrolled: classInstance.isEnrolled,
+                    classCode: (fClass.classCode || '   '),
+                    classIdentifier: (fClass.classIdentifier || 000),
+                    id: classInstance._id
+                  });
                 });
               });
-            });
+            }
           });
           async.series(instanceCalls, function(err, obj){
             response(err,{
@@ -50,7 +52,14 @@ var renderUser = function(res, user, isNotUser){
       });
     });
     async.series(calls, function(err, obj){
-      res.render('user', { user: user, isNotUser: isNotUser, semesters: obj, gradeOptions: prefs.getGradeOptions() });
+      res.render('user', {
+        user: user,
+        isNotUser: isNotUser,
+        semesters: obj,
+        gradeOptions: prefs.getGradeOptions(),
+        yearOptions: prefs.getYearOptions(),
+        courseOptions: prefs.getCourseOptions()
+      });
     });
   });
 }

@@ -17,6 +17,10 @@ var classInstanceSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  dropExcuse: {
+    type: String,
+    default: ''
+  },
   user: {
     type: Number
   },
