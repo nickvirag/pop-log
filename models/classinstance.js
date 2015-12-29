@@ -22,16 +22,24 @@ var classInstanceSchema = new mongoose.Schema({
     default: ''
   },
   user: {
-    type: Number
+    type: Number,
+    default: null
   },
   semester: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Semester'
+    ref: 'Semester',
+    default: null
   },
   class: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Class'
-  }
+    ref: 'Class',
+    default: null
+  },
+  helpInstances: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'HelpInstance',
+    default: []
+  }]
 });
 
 module.exports = mongoose.model('ClassInstance', classInstanceSchema);

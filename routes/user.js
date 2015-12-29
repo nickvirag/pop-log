@@ -58,7 +58,8 @@ var renderUser = function(res, user, isNotUser){
         semesters: obj,
         gradeOptions: prefs.getGradeOptions(),
         yearOptions: prefs.getYearOptions(),
-        courseOptions: prefs.getCourseOptions()
+        courseOptions: prefs.getCourseOptions(),
+        trimesterOptions: prefs.getTrimesterOptions()
       });
     });
   });

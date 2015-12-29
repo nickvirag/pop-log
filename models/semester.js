@@ -18,7 +18,8 @@ var semesterSchema = new mongoose.Schema({
   },
   classInstances: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Semester'
+    ref: 'Semester',
+    default: []
   }]
 });
 

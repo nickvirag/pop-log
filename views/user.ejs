@@ -18,7 +18,11 @@
       $.ajax({
         url: '/api/updateClassInstance',
         method: 'PUT',
-        data: 'grade=' + $(self).val() + '&id=' + $(self).attr('id'),
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify({
+          grade: $(self).val(),
+          id: $(self).attr('id')
+        }),
         success: function(data) {}
       });
     });
@@ -39,6 +43,16 @@
     $('#newClassIdentifier').keydown(fourDigitNumberInput);
     $('#newClassCRN').keydown(fourDigitNumberInput);
 
+    // $('.logThis').click(function(event) {
+    //
+    //   data.helpType && data.classInstance && data.user && data.completedDate && data.description
+    //     && ((data.helpType == 0 && data.hours)
+    //       || (data.helpType == 1 && data.websiteTitle && data.websiteURL))) {
+    //
+    //   event.preventDefault();
+    //   event.stopPropagation();
+    // });
+
     $('.gradeHelpButton').click(function(event) {
       $('#helpClassID').val($(this).attr('id'));
       var self = this;
@@ -47,8 +61,22 @@
         method: 'GET',
         data: 'user=<%= user._id %>&id=' + $(self).attr('id'),
         success: function(data) {
+          $('#helpClassUsers').empty();
+          $('#helpClassWebsites').empty();
+          data.websites.forEach(function(website, index) {
+            $('<a>',{
+              text: website.title,
+              href: website.url,
+              target: '_blank'
+            }).appendTo('#helpClassWebsites');
+            $('<a>',{
+              text: 'LOG THIS',
+              href: '#',
+              class: 'logHelp',
+              id: index
+            }).appendTo('#helpClassWebsites');
+          });
           $('#helpClassDialog').dialog('open');
-          $('#helpClassDialog').text(data);
         }
       });
       event.preventDefault();
@@ -102,7 +130,7 @@
 </script>
 <p><%= isNotUser ? user.displayName + '<br>' : '' %>GPA: <%= user.reportedGPA %></p>
 <% semesters.forEach(function(semester){ %>
-Semester <%= semester.trimester %> <%= semester.year %>
+<%= trimesterOptions[semester.trimester] %> <%= semester.year %>
 <table>
   <tr>
     <th>Code</th>
@@ -159,6 +187,10 @@ Semester <%= semester.trimester %> <%= semester.year %>
   Enter reason for dropping class:<br>
   <input type="text" id="dropClassExcuse"><br>
   <a id="dropClassSubmit" href="#">Drop class</a> -->
+  Users:<br>
+  <div id="helpClassUsers"></div>
+  Websites:<br>
+  <div id="helpClassWebsites"></div>
 </div>
 
 <div id="dropClassDialog" title="Drop Class">

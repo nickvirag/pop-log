@@ -10,6 +10,7 @@ mongoose.set('debug', true);
 var User = require('../models/user.js');
 var Semester = require('../models/semester.js');
 var ClassInstance = require('../models/classinstance.js');
+var HelpInstance = require('../models/helpinstance.js');
 var Class = require('../models/class.js');
 var User = require('../models/user.js');
 
@@ -23,8 +24,10 @@ exports.updateClassInstance = function(req, res){
       if (!err && classInstance) {
         if (classInstance.user == req.user.id) {
           classInstance.grade = data.grade;
-          classInstance.save();
-          res.send(classInstance);
+          classInstance.updatedAt = builder.currentEpochTime();
+          classInstance.save(function(err) {
+            res.send(classInstance);
+          });
         } else {
           res.send('error');
         }
@@ -43,6 +46,7 @@ exports.dropClassInstance = function(req, res){
         if (classInstance.user == req.user.id) {
           classInstance.isEnrolled = false;
           classInstance.dropExcuse = data.dropExcuse;
+          classInstance.updatedAt = builder.currentEpochTime();
           classInstance.save();
           res.send(classInstance);
         } else {
@@ -92,6 +96,101 @@ exports.getClassHelp = function(req, res) {
   }
 }
 
+exports.postNewAdminHelpInstance = function(req, res) {
+  /*
+  createdAt, updatedAt, requested, completed, hours, websiteTitle, websiteURL, description, helpType, dueDate, completedDate, classInstance, users
+  */
+  var data = req.body;
+  if (data.classInstance && data.user && data.dueDate) {
+    var helpInstance = new HelpInstance({
+      classInstance: data.classInstance,
+      user: data.user,
+      dueDate: data.dueDate,
+      requested: true
+    });
+    helpInstance.save(function(err) {
+      User.findById(data.user, function(err, user){
+        if (!err && user) {
+          user.helpInstances.unshift(helpInstance.id);
+          user.updatedAt = builder.currentEpochTime();
+          user.save();
+        }
+      });
+      res.send(helpInstance);
+    });
+  } else {
+    res.send('error');
+  }
+}
+
+exports.postNewHelpInstance = function(req, res) {
+  var data = req.body;
+  if (data.helpType && data.classInstance && data.user && data.completedDate && data.description
+    && ((data.helpType == 0 && data.hours)
+      || (data.helpType == 1 && data.websiteTitle && data.websiteURL))) {
+    var weekOf = data.completedDate;
+    HelpInstance.find({
+      classInstance: data.classInstance,
+      user: data.user
+    }).exec(function(err, helpInstances) {
+      var helpInstance = null;
+      if (!err && helpInstances) {
+        var timeDistance = Number.MAX_SAFE_INTEGER;
+        helpInstances.forEach(function(readHelpInstance) {
+          if (readHelpInstance.dueDate) {
+            var differenceTravel = readHelpInstance.dueDate - data.completedDate;
+            var seconds = Math.floor((differenceTravel) / (1000));
+            if (distanceTravel >= 0 && distanceTravel <= 604800 && differenceTravel < timeDistance) {
+              helpInstance = readHelpInstance;
+              timeDistance = differenceTravel;
+            }
+          }
+        });
+      }
+      if (!helpInstance) {
+        helpInstance = new HelpInstance({
+          classInstance: data.classInstance,
+          user: data.user
+        });
+        helpInstance.save(function(err) {
+          User.findById(data.user, function(err, user){
+            if (!err && user) {
+              user.helpInstances.unshift(helpInstance.id);
+              user.updatedAt = builder.currentEpochTime();
+              user.save();
+            }
+          });
+        });
+      }
+      helpInstance.helpType = data.helpType;
+      if (data.helpingUsers) {
+        helpInstance.helpingUsers = data.helpingUsers;
+        builder.arrayToObjects(User, data.helpingUsers, function(err, users) {
+          users.forEach(function(user) {
+            user.helpUserInstances.unshift(helpInstance.id);
+            user.updatedAt = builder.currentEpochTime();
+            user.save();
+          });
+        });
+      }
+      helpInstance.completed = true;
+      helpInstance.description = data.description;
+      helpInstance.completedDate = data.completedDate;
+      if (data.helpType == 0) {
+        helpInstance.hours = data.hours;
+      } else if (data.helpType == 1) {
+        helpInstance.websiteTitle = data.websiteTitle;
+        helpInstance.websiteURL = data.websiteURL;
+      }
+      helpInstance.save(function(err) {
+        res.send(helpInstance);
+      });
+    });
+  } else {
+    res.send('error');
+  }
+}
+
 exports.postNewClassInstance = function(req, res){
   var data = req.body;
   if (data.trimester && data.year && data.classCode && data.classIdentifier && data.user) {
@@ -104,8 +203,10 @@ exports.postNewClassInstance = function(req, res){
         });
         classInstance.save(function(err, newClassInstance){
           semester.classInstances.unshift(classInstance.id);
+          semester.updatedAt = builder.currentEpochTime();
           semester.save();
           fClass.classInstances.unshift(classInstance.id);
+          fClass.updatedAt = builder.currentEpochTime();
           fClass.save();
           if(req.user.semesters.indexOf(semester.id) == -1) {
             req.user.semesters.unshift(semester.id);
@@ -114,6 +215,7 @@ exports.postNewClassInstance = function(req, res){
             req.user.classes.unshift(fClass.id);
           }
           req.user.classInstances.unshift(classInstance.id);
+          req.user.updatedAt = builder.currentEpochTime();
           req.user.save();
           res.send(classInstance);
         });
@@ -125,6 +227,7 @@ exports.postNewClassInstance = function(req, res){
         }).exec(function(err, fClass) {
           if (!err && fClass) {
             fClass.users.unshift(data.user);
+            fClass.updatedAt = builder.currentEpochTime();
             fClass.save();
             createWithSemesterAndClass(semester, fClass);
           } else {
@@ -144,7 +247,6 @@ exports.postNewClassInstance = function(req, res){
         trimester: data.trimester,
         year: data.year
       }).exec(function(err, semester) {
-        console.log('err: ' + err + '\nsemester: ' + semester);
         if (!err && semester) {
           createWithSemester(semester);
         } else {

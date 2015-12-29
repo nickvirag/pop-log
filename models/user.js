@@ -27,15 +27,28 @@ var userSchema = new mongoose.Schema({
   },
   classes: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Class'
+    ref: 'Class',
+    default: []
   }],
   classInstances: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'ClassInstance'
+    ref: 'ClassInstance',
+    default: []
+  }],
+  helpInstances: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'HelpInstance',
+    default: []
+  }],
+  helpUserInstances: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'HelpInstance',
+    default: []
   }],
   semesters: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Semester'
+    ref: 'Semester',
+    default: []
   }],
   _id: Number
 });

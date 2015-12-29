@@ -26,3 +26,7 @@ exports.arrayToObjects = function(Document, array, callback) {
     callback(err, objects);
   });
 };
+
+exports.currentEpochTime = function() {
+  return Math.round(new Date().getTime() / 1000);
+}

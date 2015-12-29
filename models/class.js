@@ -16,11 +16,13 @@ var classSchema = new mongoose.Schema({
     default: ''
   },
   users: [{
-    type: Number
+    type: Number,
+    default: []
   }],
   classInstances: [{
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'ClassInstance'
+    ref: 'ClassInstance',
+    default: []
   }]
 });
 
