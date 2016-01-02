@@ -1,0 +1,25 @@
+<% layout('layout') %>
+<table>
+  <tr>
+    <th>Date</th>
+    <th>Due Date</th>
+    <th>Class</th>
+    <th>Type</th>
+    <th>Hours</th>
+    <th>Website</th>
+    <th>Description</th>
+    <th>Helping users</th>
+  </tr>
+  <% helpInstances.forEach(function(helpInstance){ -%>
+  <tr>
+    <td><%= helpInstance.completedDate %></td>
+    <td><%= helpInstance.dueDate %></td>
+    <td><%= helpInstance.classInstance %></td>
+    <td><%= helpInstance.helpType %></td>
+    <td><%= helpInstance.hours %></td>
+    <td><%= helpInstance.websiteID %></td>
+    <td><%= helpInstance.description %></td>
+    <td><%= helpInstance.helpingUsers %></td>
+  </tr>
+  <% }); %>
+</table>

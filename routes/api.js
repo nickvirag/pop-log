@@ -61,7 +61,6 @@ exports.dropClassInstance = function(req, res){
 
 exports.getClassHelp = function(req, res) {
   var data = req.query;
-  console.log(req);
   if (data.id && data.user) {
     if (req.user.id == data.user) {
       ClassInstance.findById(data.id, function(err, classInstance) {
@@ -127,7 +126,7 @@ exports.postNewHelpInstance = function(req, res) {
   var data = req.body;
   if (data.helpType && data.classInstance && data.user && data.completedDate && data.description
     && ((data.helpType == 0 && data.hours)
-      || (data.helpType == 1 && data.websiteTitle && data.websiteURL))) {
+      || (data.helpType == 1 && data.websiteID))) {
     var weekOf = data.completedDate;
     HelpInstance.find({
       classInstance: data.classInstance,
@@ -147,21 +146,21 @@ exports.postNewHelpInstance = function(req, res) {
           }
         });
       }
-      if (!helpInstance) {
+      if (helpInstance === null) {
         helpInstance = new HelpInstance({
           classInstance: data.classInstance,
           user: data.user
         });
-        helpInstance.save(function(err) {
-          User.findById(data.user, function(err, user){
-            if (!err && user) {
-              user.helpInstances.unshift(helpInstance.id);
-              user.updatedAt = builder.currentEpochTime();
-              user.save();
-            }
-          });
-        });
       }
+      helpInstance.save(function(err) {
+        User.findById(data.user, function(err, user){
+          if (!err && user) {
+            user.helpInstances.unshift(helpInstance.id);
+            user.updatedAt = builder.currentEpochTime();
+            user.save();
+          }
+        });
+      });
       helpInstance.helpType = data.helpType;
       if (data.helpingUsers) {
         helpInstance.helpingUsers = data.helpingUsers;
@@ -179,10 +178,10 @@ exports.postNewHelpInstance = function(req, res) {
       if (data.helpType == 0) {
         helpInstance.hours = data.hours;
       } else if (data.helpType == 1) {
-        helpInstance.websiteTitle = data.websiteTitle;
-        helpInstance.websiteURL = data.websiteURL;
+        helpInstance.websiteID = data.websiteID;
       }
       helpInstance.save(function(err) {
+        console.log('help err: ' + err);
         res.send(helpInstance);
       });
     });

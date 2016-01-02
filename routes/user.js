@@ -59,7 +59,8 @@ var renderUser = function(res, user, isNotUser){
         gradeOptions: prefs.getGradeOptions(),
         yearOptions: prefs.getYearOptions(),
         courseOptions: prefs.getCourseOptions(),
-        trimesterOptions: prefs.getTrimesterOptions()
+        trimesterOptions: prefs.getTrimesterOptions(),
+        currentTrimester: prefs.getCurrentTrimester()
       });
     });
   });

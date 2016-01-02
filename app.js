@@ -10,6 +10,7 @@ var index = require('./routes/index');
 var userRoute = require('./routes/user');
 var login = require('./routes/login');
 var api = require('./routes/api');
+var logs = require('./routes/logs');
 var fClass = require('./routes/class');
 
 var prefs = require('./helpers/prefs');
@@ -102,8 +103,12 @@ app.get('/', index.get);
 app.get('/user/*', ensureAuthenticated, userRoute.getById);
 app.get('/user', ensureAuthenticated, userRoute.get);
 
+app.get('/logs', ensureAuthenticated, logs.get);
+
 app.post('/api/newClassInstance', ensureAuthenticated, api.postNewClassInstance);
 app.put('/api/updateClassInstance', ensureAuthenticated, api.updateClassInstance);
+
+app.post('/api/postNewHelpInstance', ensureAuthenticated, api.postNewHelpInstance);
 
 app.get('/api/getClassHelp', ensureAuthenticated, api.getClassHelp);
 

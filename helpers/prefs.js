@@ -23,7 +23,39 @@ exports.getTrimesterOptions = function() {
   // } else if (month >= 3 && month < 7 ) { //AMJJ
   //   return ['Spring', 'Summer']
   // }
-  return jsonContent.classes.semesters;
+  var semesters = [];
+  jsonContent.classes.semesters.forEach(function(semester) {
+    semesters.push(semester.label);
+  });
+  return semesters;
+}
+
+exports.getCurrentTrimester = function() {
+  var date = new Date();
+  var currentMonth = date.getMonth() + 1;
+  var currentDay = date.getDate() + 1;
+  var semesters = jsonContent.classes.semesters;
+  var currentSemester = -1;
+  for (var x = 0, semester = {}; x < semesters.length; x ++) {
+    semester = semesters[x];
+    if (currentMonth >= semester.startMonth && currentMonth <= semester.endMonth) {
+      if (currentMonth == semester.startMonth) {
+        if (currentDay >= semester.startDay) {
+          currentSemester = x;
+          break;
+        }
+      } else if (currentMonth == semester.endMonth) {
+        if (currentDay <= semester.endDay) {
+          currentSemester = x;
+          break;
+        }
+      } else {
+        currentSemester = x;
+        break;
+      }
+    }
+  }
+  return currentSemester;
 }
 
 exports.getDatabaseURI = function() {

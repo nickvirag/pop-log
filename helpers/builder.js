@@ -12,6 +12,7 @@ exports.arrayToObjects = function(Document, array, callback) {
   array.forEach(function(index){
     calls.push(function(response){
       Document.findById(index, function(err, object){
+        console.log('BUILDER: ' + object);
         response(err, object);
       });
     });

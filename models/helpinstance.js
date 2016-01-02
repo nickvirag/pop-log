@@ -21,13 +21,9 @@ var helpInstanceSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  websiteTitle: {
-    type: String,
-    default: ''
-  },
-  websiteURL: {
-    type: String,
-    default: ''
+  websiteID: {
+    type: Number,
+    default: null
   },
   description: {
     type: String,
