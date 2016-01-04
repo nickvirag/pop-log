@@ -16,13 +16,6 @@ exports.getCourseOptions = function() {
 }
 
 exports.getTrimesterOptions = function() {
-  // var today = new Date();
-  // var month = today.getMonth();
-  // if (month < 3) { //JFM
-  //   return ['Spring'];
-  // } else if (month >= 3 && month < 7 ) { //AMJJ
-  //   return ['Spring', 'Summer']
-  // }
   var semesters = [];
   jsonContent.classes.semesters.forEach(function(semester) {
     semesters.push(semester.label);
@@ -56,6 +49,10 @@ exports.getCurrentTrimester = function() {
     }
   }
   return currentSemester;
+}
+
+exports.getCurrentYear = function () {
+  return new Date().getYear();
 }
 
 exports.getDatabaseURI = function() {

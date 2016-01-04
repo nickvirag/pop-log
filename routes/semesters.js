@@ -31,7 +31,7 @@ var renderUser = function(res, user, isNotUser){
     });
   });
   async.series(calls, function(err, obj){
-    res.render('user', {
+    res.render('semesters', {
       user: user,
       isNotUser: isNotUser,
       semesters: obj,
@@ -58,6 +58,6 @@ exports.getById = function(req, res){
       renderUser(res, user, true);
     });
   } else {
-    res.redirect('/user');
+    res.redirect('/semesters');
   }
 };

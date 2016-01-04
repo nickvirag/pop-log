@@ -12,7 +12,6 @@ var Semester = require('../models/semester.js');
 var ClassInstance = require('../models/classinstance.js');
 var HelpInstance = require('../models/helpinstance.js');
 var Class = require('../models/class.js');
-var User = require('../models/user.js');
 
 var builder = require('../helpers/builder');
 var prefs = require('../helpers/prefs');
@@ -57,6 +56,13 @@ exports.dropClassInstance = function(req, res){
       }
     });
   }
+}
+
+exports.getSemester = function(req, res) {
+  var data = req.query;
+  builder.getJSONSemester(data, function(err, response){
+    res.send(response);
+  });
 }
 
 exports.getClassHelp = function(req, res) {

@@ -1,7 +1,6 @@
 <% layout('layout') %>
 <script>
-  $(document).ready(function() {
-    var semesterTable = $('#semesterClasses').DataTable();
+  $(function() {
     $('#helpClassDialog').dialog({
       autoOpen: false
     });
@@ -22,40 +21,7 @@
       autoOpen: false
     });
 
-    $('#semesterSelector').change(function() {
-      var self = this;
-      $.ajax({
-        url: '/api/getSemester',
-        method: 'GET',
-        contentType: 'application/json; charset=utf-8',
-        data: {
-          semester: $('#semesterSelector').val(),
-          user: '<%= user._id %>'
-        },
-        success: function(data) {
-          semesterTable.clear();
-          data.classes.forEach(function(fClass) {
-            semesterTable.row.add([
-              fClass.classCode,
-              fClass.classIdentifier,
-              '<select name="grade" class="gradeSelector" id="gradeSelector_' + fClass.id + '" data-class="' + fClass.id + '">'
-              <% gradeOptions.forEach(function(gradeOption, x){ %>
-              + '<option value="<%= x %>"><%= gradeOption %></option>'
-              <% }); %>
-              + '</select>',
-              '<a class="gradeHelpButton" id="gradeHelpButton_' + fClass.id + '" data-class="' + fClass.id + '" href="#">HELP</a>'
-              + ' <a class="gradeDropButton" id="gradeDropButton_' + fClass.id + '" data-class="' + fClass.id + '" href="#">DROP</a>'
-            ]).draw( false );
-            $('#gradeSelector_' + fClass.id + ' option')[fClass.grade].selected = true;
-            $('#gradeSelector_' + fClass.id).change(gradeSelectorChanged);
-            $('#gradeHelpButton_' + fClass.id).click(helpButtonClick);
-            $('#gradeDropButton_' + fClass.id).click(dropButtonClick);
-          });
-        }
-      });
-    });
-
-    var gradeSelectorChanged = function() {
+    $('.gradeSelector').change(function() {
       var self = this;
       $.ajax({
         url: '/api/updateClassInstance',
@@ -63,11 +29,11 @@
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify({
           grade: $(self).val(),
-          id: $(self).data('class')
+          id: $(self).attr('id')
         }),
         success: function(data) {}
       });
-    };
+    });
 
     var fourDigitNumberInput = function (e) {
       if ($.inArray(e.keyCode, [46, 8, 9, 27, 13]) !== -1
@@ -151,7 +117,7 @@
       event.stopPropagation();
     });
 
-    var helpButtonClick = function(event) {
+    $('.gradeHelpButton').click(function(event) {
       var self = this;
       $.ajax({
         url: '/api/getClassHelp',
@@ -159,7 +125,7 @@
         contentType: 'application/json; charset=utf-8',
         data: {
           user: '<%= user._id %>',
-          id: $(self).data('class')
+          id: $(self).attr('id')
         },
         success: function(data) {
           $('#helpClassUsers').empty();
@@ -195,14 +161,14 @@
       });
       event.preventDefault();
       event.stopPropagation();
-    };
+    });
 
-    var dropButtonClick = function(event) {
+    $('.gradeDropButton').click(function(event) {
       $('#dropClassDialog').dialog('open');
-      $('#dropClassID').val($(this).data('class'));
+      $('#dropClassID').val($(this).attr('id'));
       event.preventDefault();
       event.stopPropagation();
-    };
+    });
 
     $('#newClassButton').click(function(event) {
       $('#newClassDialog').dialog('open');
@@ -227,6 +193,8 @@
       event.stopPropagation();
     });
 
+    // data.trimester && data.year && data.classCode && data.classIdentifier && data.user
+
     $('#newClassSubmit').click(function(event) {
       $.ajax({
         url: '/api/newClassInstance',
@@ -246,30 +214,36 @@
       event.preventDefault();
       event.stopPropagation();
     });
-    //$('#semesterSelector option')[0].selected = true;
-    $('#semesterSelector').change();
   });
 </script>
 <p><%= isNotUser ? user.displayName + '<br>' : '' %>GPA: <%= user.reportedGPA %></p>
-<select name="semester" id="semesterSelector">
-  <% semesters.forEach(function(semester, index){ %>
-  <option value="<%= semester.id %>"><%= trimesterOptions[semester.trimester] %> <%= semester.year %></option>
-  <% }); %>
-</select>
-<table id="semesterClasses">
-  <thead>
+<% semesters.forEach(function(semester, index){ %>
+<%= trimesterOptions[semester.trimester] %> <%= semester.year %> <%= currentTrimester == index ? '(Current)' : '' %>
+<table>
   <tr>
     <th>Code</th>
     <th>Identifier</th>
     <th>Grade</th>
     <th>Actions</th>
   </tr>
-</thead>
-<tbody>
-</tbody>
+  <% semester.classes.forEach(function(fClass){ -%>
+  <tr>
+    <td><%= fClass.classCode %></td>
+    <td><%= fClass.classIdentifier %></td>
+    <td><select name="grade" class="gradeSelector" id="<%= fClass.id %>">
+      <% gradeOptions.forEach(function(gradeOption, x){ %>
+      <option value="<%= x %>" <% if (x == fClass.grade) { %>selected="selected"<% } %>><%= gradeOption %></option>
+      <% }); %>
+    </select></td>
+    <td>
+      <a class="gradeHelpButton" id="<%= fClass.id %>" href="#">HELP</a> <a class="gradeDropButton" id="<%= fClass.id %>" href="#">DROP</a>
+    </td>
+  </tr>
+  <% }); %>
 </table>
 <br>
 <br>
+<% }); %>
 <a id="newClassButton" href="#">Add a class</a>
 
 <div id="newClassDialog" title="New Class">

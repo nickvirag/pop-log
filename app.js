@@ -7,6 +7,7 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 
 var index = require('./routes/index');
+var semesters = require('./routes/semesters');
 var userRoute = require('./routes/user');
 var login = require('./routes/login');
 var api = require('./routes/api');
@@ -103,6 +104,9 @@ app.get('/', index.get);
 app.get('/user/*', ensureAuthenticated, userRoute.getById);
 app.get('/user', ensureAuthenticated, userRoute.get);
 
+app.get('/semesters/*', ensureAuthenticated, semesters.getById);
+app.get('/semesters', ensureAuthenticated, semesters.get);
+
 app.get('/logs', ensureAuthenticated, logs.get);
 
 app.post('/api/newClassInstance', ensureAuthenticated, api.postNewClassInstance);
@@ -111,6 +115,8 @@ app.put('/api/updateClassInstance', ensureAuthenticated, api.updateClassInstance
 app.post('/api/postNewHelpInstance', ensureAuthenticated, api.postNewHelpInstance);
 
 app.get('/api/getClassHelp', ensureAuthenticated, api.getClassHelp);
+
+app.get('/api/getSemester', ensureAuthenticated, api.getSemester);
 
 app.post('/api/dropClassInstance', ensureAuthenticated, api.dropClassInstance);
 

@@ -18,9 +18,7 @@ var HelpInstance = require('../models/helpinstance.js');
 var Class = require('../models/class.js');
 
 exports.get = function(req, res){
-  console.log('HIN: ' + req.user.helpInstances);
   builder.arrayToObjects(HelpInstance, req.user.helpInstances, function(err, userHelpInstances){
-    console.log('HIN2: ' + userHelpInstances);
     res.render('logs', {
       user: req.user,
       helpInstances: userHelpInstances
