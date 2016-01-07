@@ -23,6 +23,10 @@ exports.getTrimesterOptions = function() {
   return semesters;
 }
 
+exports.getDateFormat = function() {
+  return 'dddd, mmmm dS, h:MM:ss TT';
+}
+
 exports.getCurrentTrimester = function() {
   var date = new Date();
   var currentMonth = date.getMonth() + 1;
@@ -79,6 +83,24 @@ exports.getYearOptions = function() {
 
 exports.getHelpWebsites = function() {
   return jsonContent.help.websites;
+}
+
+exports.getHelpWebsiteByID = function(id) {
+  var response = {};
+  var BreakException = {};
+  try {
+    jsonContent.help.websites.forEach(function(website) {
+      if (website.id == id) {
+        response = website;
+        throw BreakException;
+      }
+    });
+  } catch (e) {
+    if (e !== BreakException) {
+      throw e;
+    }
+  }
+  return response;
 }
 
 exports.getAdminOverride = function() {

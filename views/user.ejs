@@ -1,7 +1,16 @@
 <% layout('layout') %>
 <script>
   $(document).ready(function() {
-    var semesterTable = $('#semesterClasses').DataTable();
+    var semesterTable = $('#semesterClasses').DataTable({
+      bPaginate: false,
+      bFilter: false,
+      bInfo: false
+    });
+    var userLogsTable = $('#userLogsTable').DataTable({
+      bPaginate: false,
+      bFilter: false,
+      bInfo: false
+    });
     $('#helpClassDialog').dialog({
       autoOpen: false
     });
@@ -55,6 +64,35 @@
       });
     });
 
+    var getLogs = function() {
+      var self = this;
+      $.ajax({
+        url: '/api/getLogs',
+        method: 'GET',
+        contentType: 'application/json; charset=utf-8',
+        data: {
+          user: '<%= user._id %>'
+        },
+        success: function(data) {
+          userLogsTable.clear();
+          data.forEach(function(helpInstance) {
+            userLogsTable.row.add([
+              helpInstance.day,
+              helpInstance.class,
+              helpInstance.description
+              // new Date(helpInstance.dueDate * 1000),
+              // helpInstance.classInstance,
+              // helpInstance.helpType,
+              // helpInstance.hours,
+              // helpInstance.websiteID,
+              // helpInstance.description,
+              // helpInstance.helpingUsers
+            ]).draw( false );
+          });
+        }
+      });
+    };
+
     var gradeSelectorChanged = function() {
       var self = this;
       $.ajax({
@@ -92,15 +130,6 @@
     // });
 
     $('.logHoursSubmit').click(function(event) {
-      // data: JSON.stringify({
-      //   helpType: 1,
-      //   websiteTitle:
-      //   websiteURL:
-      //   classInstance:
-      //   user:
-      //   completedDate:
-      //   description:
-      // }),
       $.ajax({
         url: '/api/postNewHelpInstance',
         method: 'POST',
@@ -113,7 +142,9 @@
           completedDate: Math.round(new Date().getTime() / 1000),
           description: $('#hoursDescription').val()
         }),
-        success: function(data) { }
+        success: function(data) {
+          getLogs();
+        }
       });
 
       event.preventDefault();
@@ -121,15 +152,6 @@
     });
 
     $('#logWebsiteSubmit').click(function(event) {
-      // data: JSON.stringify({
-      //   helpType: 1,
-      //   websiteTitle:
-      //   websiteURL:
-      //   classInstance:
-      //   user:
-      //   completedDate:
-      //   description:
-      // }),
       $.ajax({
         url: '/api/postNewHelpInstance',
         method: 'POST',
@@ -144,6 +166,7 @@
         }),
         success: function(data) {
           $('#logWebsiteDialog').dialog('close');
+          getLogs();
         }
       });
 
@@ -180,7 +203,7 @@
               }).appendTo('#helpClassWebsites');
               $('#helpClassWebsites').append('<br>');
               $('#logHelp_' + index).click(function(event) {
-                $('#websiteInstance').val($(self).attr('id'));
+                $('#websiteInstance').val($(self).data('class'));
                 $('#websiteTitle').val(website.title);
                 $('#websiteURL').val(website.url);
                 $('#websiteID').val(website.id);
@@ -246,27 +269,53 @@
       event.preventDefault();
       event.stopPropagation();
     });
-    //$('#semesterSelector option')[0].selected = true;
     $('#semesterSelector').change();
+    getLogs();
   });
 </script>
-<p><%= isNotUser ? user.displayName + '<br>' : '' %>GPA: <%= user.reportedGPA %></p>
+<p>
+  <%= isNotUser ? user.displayName + '<br>' : '' %>
+  GPA: <%= user.reportedGPA %>
+</p>
+<br>
+
+Logs since <%= lastSunday %>:<br>
+<br>
+
+<table id="userLogsTable">
+  <thead>
+    <tr>
+      <th>Day</th>
+      <th>Class</th>
+      <th>Description</th>
+      <!--<th>Due Date</th>
+      <th>Class</th>
+      <th>Type</th>
+      <th>Hours</th>
+      <th>Website</th>
+      <th>Description</th>
+      <th>Helping users</th>-->
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+<br>
 <select name="semester" id="semesterSelector">
   <% semesters.forEach(function(semester, index){ %>
   <option value="<%= semester.id %>"><%= trimesterOptions[semester.trimester] %> <%= semester.year %></option>
   <% }); %>
-</select>
+</select><br>
+<br>
 <table id="semesterClasses">
   <thead>
-  <tr>
-    <th>Code</th>
-    <th>Identifier</th>
-    <th>Grade</th>
-    <th>Actions</th>
-  </tr>
-</thead>
-<tbody>
-</tbody>
+    <tr>
+      <th>Code</th>
+      <th>Identifier</th>
+      <th>Grade</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
 </table>
 <br>
 <br>

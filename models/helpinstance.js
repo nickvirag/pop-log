@@ -52,4 +52,8 @@ var helpInstanceSchema = new mongoose.Schema({
   }]
 });
 
+helpInstanceSchema.method('generateDescription', function() {
+  return this.ClassInstance;
+});
+
 module.exports = mongoose.model('HelpInstance', helpInstanceSchema);

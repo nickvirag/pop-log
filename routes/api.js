@@ -15,6 +15,7 @@ var Class = require('../models/class.js');
 
 var builder = require('../helpers/builder');
 var prefs = require('../helpers/prefs');
+var dateFormat = require('dateformat');
 
 exports.updateClassInstance = function(req, res){
   var data = req.body;
@@ -35,7 +36,7 @@ exports.updateClassInstance = function(req, res){
       }
     });
   }
-}
+};
 
 exports.dropClassInstance = function(req, res){
   var data = req.body;
@@ -63,7 +64,7 @@ exports.getSemester = function(req, res) {
   builder.getJSONSemester(data, function(err, response){
     res.send(response);
   });
-}
+};
 
 exports.getClassHelp = function(req, res) {
   var data = req.query;
@@ -91,6 +92,41 @@ exports.getClassHelp = function(req, res) {
           });
         } else {
           res.send('missing class error');
+        }
+      });
+    } else {
+      res.send('user mismatch error');
+    }
+  } else {
+    res.send('missing parameters error');
+  }
+};
+
+exports.getLogs = function(req, res) {
+  var data = req.query;
+  if (data.user) {
+    if (req.user.id == data.user) {
+      User.findById(data.user, function(err, user) {
+        if (!err && user) {
+          builder.arrayToObjects(HelpInstance, user.helpInstances, function(err, helpInstances) {
+            var logs = [];
+            var lastSunday = new Date();
+            lastSunday.setDate(lastSunday.getDate() - lastSunday.getDay());
+            lastSunday.setHours(0, 0, 0, 0);
+            helpInstances.forEach(function(helpInstance) {
+              var date = new Date(helpInstance.completedDate * 1000);
+              lastSunday.setHours(0, 0, 0, 0);
+              logs.unshift({
+                completedDate: dateFormat(date, prefs.getDateFormat()),
+                day: dateFormat(date, 'dddd'),
+                class: helpInstance.classInstance,
+                description: builder.helpInstanceText(helpInstance)
+              });
+            });
+            res.send(logs);
+          });
+        } else {
+          res.send('error');
         }
       });
     } else {
@@ -187,7 +223,6 @@ exports.postNewHelpInstance = function(req, res) {
         helpInstance.websiteID = data.websiteID;
       }
       helpInstance.save(function(err) {
-        console.log('help err: ' + err);
         res.send(helpInstance);
       });
     });

@@ -118,6 +118,8 @@ app.get('/api/getClassHelp', ensureAuthenticated, api.getClassHelp);
 
 app.get('/api/getSemester', ensureAuthenticated, api.getSemester);
 
+app.get('/api/getLogs', ensureAuthenticated, api.getLogs);
+
 app.post('/api/dropClassInstance', ensureAuthenticated, api.dropClassInstance);
 
 app.get('/class/new', ensureAuthenticated, fClass.new);

@@ -8,6 +8,8 @@ var ClassInstance = require('../models/classinstance.js');
 var HelpInstance = require('../models/helpinstance.js');
 var Class = require('../models/class.js');
 
+var prefs = require('./prefs');
+
 var async = require('async');
 
 exports.arrayToObjects = function(Document, array, callback) {
@@ -33,12 +35,33 @@ exports.arrayToObjects = function(Document, array, callback) {
   });
 };
 
+exports.sort_by = function(field, reverse, primer) {
+  var key = function(x) {
+    return primer ? primer(x[field]) : x[field];
+  };
+
+  var reverseInt = !reverse ? 1 : -1;
+
+  return function (a, b) {
+    return a = key(a), b = key(b), reverseInt * ((a > b) - (b > a));
+  };
+};
+
 exports.currentEpochTime = function() {
   return Math.round(new Date().getTime() / 1000);
+};
+
+exports.helpInstanceText = function(helpInstance) {
+  var description = '';
+  if (helpInstance.helpType == 0) {
+    description += 'Studied ' + helpInstance.hours;
+  } else if (helpInstance.helpType == 1) {
+    description += 'Used resource "' + prefs.getHelpWebsiteByID(helpInstance.websiteID).title + '"';
+  }
+  return description;
 }
 
 exports.getJSONSemester = function(data, callback) {
-  console.log('DATA: ' + JSON.stringify(data));
   if (data.user && data.semester) {
     Semester.findById(data.semester, function(err, semester) {
       if (!err && semester) {
@@ -73,4 +96,4 @@ exports.getJSONSemester = function(data, callback) {
   } else {
     callback('error', {});
   }
-}
+};
