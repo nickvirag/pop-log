@@ -145,7 +145,7 @@ exports.postNewAdminHelpInstance = function(req, res) {
   if (data.classInstance && data.user && data.dueDate) {
     var helpInstance = new HelpInstance({
       classInstance: data.classInstance,
-      user: data.user,
+      users: [data.user],
       dueDate: data.dueDate,
       requested: true
     });
@@ -166,54 +166,49 @@ exports.postNewAdminHelpInstance = function(req, res) {
 
 exports.postNewHelpInstance = function(req, res) {
   var data = req.body;
-  if (data.helpType && data.classInstance && data.user && data.completedDate && data.description
+  if (data.helpType && data.user && data.completedDate && data.description
     && ((data.helpType == 0 && data.hours)
       || (data.helpType == 1 && data.websiteID))) {
+    var users = [];
+    if (data.helpingUsers) {
+      users = data.helpingUsers;
+    }
+    users.unshift(data.user);
     var weekOf = data.completedDate;
     HelpInstance.find({
-      classInstance: data.classInstance,
-      user: data.user
+      classInstance: (data.classInstance || ''),
+      users: users
     }).exec(function(err, helpInstances) {
       var helpInstance = null;
-      if (!err && helpInstances) {
-        var timeDistance = Number.MAX_SAFE_INTEGER;
-        helpInstances.forEach(function(readHelpInstance) {
-          if (readHelpInstance.dueDate) {
-            var differenceTravel = readHelpInstance.dueDate - data.completedDate;
-            var seconds = Math.floor((differenceTravel) / (1000));
-            if (distanceTravel >= 0 && distanceTravel <= 604800 && differenceTravel < timeDistance) {
-              helpInstance = readHelpInstance;
-              timeDistance = differenceTravel;
-            }
-          }
-        });
-      }
-      if (helpInstance === null) {
+      // if (!err && helpInstances) {
+      //   var timeDistance = Number.MAX_SAFE_INTEGER;
+      //   helpInstances.forEach(function(readHelpInstance) {
+      //     if (readHelpInstance.dueDate) {
+      //       var differenceTravel = readHelpInstance.dueDate - data.completedDate;
+      //       var seconds = Math.floor((differenceTravel) / (1000));
+      //       if (distanceTravel >= 0 && distanceTravel <= 604800 && differenceTravel < timeDistance) {
+      //         helpInstance = readHelpInstance;
+      //         timeDistance = differenceTravel;
+      //       }
+      //     }
+      //   });
+      // }
+      // if (helpInstance === null) {
         helpInstance = new HelpInstance({
-          classInstance: data.classInstance,
-          user: data.user
+          users: users
         });
-      }
-      helpInstance.save(function(err) {
-        User.findById(data.user, function(err, user){
-          if (!err && user) {
-            user.helpInstances.unshift(helpInstance.id);
-            user.updatedAt = builder.currentEpochTime();
-            user.save();
-          }
+        if (data.classInstance && data.classInstance != '') {
+          helpInstance.classInstance = data.classInstance;
+        }
+      // }
+      helpInstance.helpType = data.helpType;
+      builder.arrayToObjects(User, users, function(err, usersObject) {
+        usersObject.forEach(function(user) {
+          user.helpInstances.unshift(helpInstance.id);
+          user.updatedAt = builder.currentEpochTime();
+          user.save();
         });
       });
-      helpInstance.helpType = data.helpType;
-      if (data.helpingUsers) {
-        helpInstance.helpingUsers = data.helpingUsers;
-        builder.arrayToObjects(User, data.helpingUsers, function(err, users) {
-          users.forEach(function(user) {
-            user.helpUserInstances.unshift(helpInstance.id);
-            user.updatedAt = builder.currentEpochTime();
-            user.save();
-          });
-        });
-      }
       helpInstance.completed = true;
       helpInstance.description = data.description;
       helpInstance.completedDate = data.completedDate;

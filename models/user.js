@@ -40,11 +40,6 @@ var userSchema = new mongoose.Schema({
     ref: 'HelpInstance',
     default: []
   }],
-  helpUserInstances: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'HelpInstance',
-    default: []
-  }],
   semesters: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Semester',

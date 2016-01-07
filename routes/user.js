@@ -47,7 +47,8 @@ var renderUser = function(res, user, isNotUser){
         trimesterOptions: prefs.getTrimesterOptions(),
         currentTrimester: prefs.getCurrentTrimester(),
         lastSunday: dateFormat(lastSunday, prefs.getDateFormat()),
-        helpInstances: helpInstances
+        helpInstances: helpInstances,
+        websites: prefs.getHelpWebsites()
       });
     });
   });

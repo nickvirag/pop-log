@@ -1,5 +1,6 @@
 <% layout('layout') %>
 <script>
+  var classes = {};
   $(document).ready(function() {
     var semesterTable = $('#semesterClasses').DataTable({
       bPaginate: false,
@@ -11,7 +12,7 @@
       bFilter: false,
       bInfo: false
     });
-    $('#helpClassDialog').dialog({
+    $('#userClassDialog').dialog({
       autoOpen: false
     });
 
@@ -23,7 +24,7 @@
       autoOpen: false
     });
 
-    $('#logHoursDialog').dialog({
+    $('#logHoursMasterDialog').dialog({
       autoOpen: false
     });
 
@@ -43,7 +44,8 @@
         },
         success: function(data) {
           semesterTable.clear();
-          data.classes.forEach(function(fClass) {
+          classes = data.classes;
+          classes.forEach(function(fClass) {
             semesterTable.row.add([
               fClass.classCode,
               fClass.classIdentifier,
@@ -52,12 +54,12 @@
               + '<option value="<%= x %>"><%= gradeOption %></option>'
               <% }); %>
               + '</select>',
-              '<a class="gradeHelpButton" id="gradeHelpButton_' + fClass.id + '" data-class="' + fClass.id + '" href="#">HELP</a>'
+              '<a class="gradeUserButton" id="gradeUserButton_' + fClass.id + '" data-class="' + fClass.id + '" href="#">USERS</a>'
               + ' <a class="gradeDropButton" id="gradeDropButton_' + fClass.id + '" data-class="' + fClass.id + '" href="#">DROP</a>'
             ]).draw( false );
             $('#gradeSelector_' + fClass.id + ' option')[fClass.grade].selected = true;
             $('#gradeSelector_' + fClass.id).change(gradeSelectorChanged);
-            $('#gradeHelpButton_' + fClass.id).click(helpButtonClick);
+            $('#gradeUserButton_' + fClass.id).click(userButtonClick);
             $('#gradeDropButton_' + fClass.id).click(dropButtonClick);
           });
         }
@@ -123,12 +125,6 @@
     $('#newClassIdentifier').keydown(fourDigitNumberInput);
     $('#newClassCRN').keydown(fourDigitNumberInput);
 
-    // $('.logHelp').click(function(event) {
-    //   $('#logHoursDialog').dialog('open');
-    //   event.preventDefault();
-    //   event.stopPropagation();
-    // });
-
     $('.logHoursSubmit').click(function(event) {
       $.ajax({
         url: '/api/postNewHelpInstance',
@@ -137,7 +133,7 @@
         data: JSON.stringify({
           helpType: 0,
           hours: $('#postHelpHours').val(),
-          classInstance: $('#postHelpClassInstance').val(),
+          classInstance: $('#logHoursClass').val(),
           user: '<%= user._id %>',
           completedDate: Math.round(new Date().getTime() / 1000),
           description: $('#hoursDescription').val()
@@ -151,6 +147,32 @@
       event.stopPropagation();
     });
 
+    $('#logHoursButton').click(function(event) {
+      $("#logHoursClass").html('');
+      classes.forEach(function(fClass) {
+        $("#logHoursClass").append($("<option />").val(fClass.id).text(fClass.classCode + ' ' + fClass.classIdentifier));
+      });
+      $("#logHoursClass").append($("<option />").val('').text('Other'));
+      $('#logHoursMasterDialog').dialog('open');
+      event.preventDefault();
+      event.stopPropagation();
+    });
+
+    $('.logWebsiteButton').click(function(event) {
+      var self = $(this);
+      $("#websiteTitle").val(self.data('title'));
+      $("#websiteURL").val(self.data('url'));
+      $("#websiteID").val(self.data('id'));
+      $("#logWebsiteClass").html('');
+      classes.forEach(function(fClass) {
+        $("#logWebsiteClass").append($("<option />").val(fClass.id).text(fClass.classCode + ' ' + fClass.classIdentifier));
+      });
+      $("#logWebsiteClass").append($("<option />").val('').text('Other'));
+      $('#logWebsiteDialog').dialog('open');
+      event.preventDefault();
+      event.stopPropagation();
+    });
+
     $('#logWebsiteSubmit').click(function(event) {
       $.ajax({
         url: '/api/postNewHelpInstance',
@@ -159,7 +181,7 @@
         data: JSON.stringify({
           helpType: 1,
           websiteID: $('#websiteID').val(),
-          classInstance: $('#websiteInstance').val(),
+          classInstance: $('#logWebsiteClass').val(),
           user: '<%= user._id %>',
           completedDate: Math.round(new Date().getTime() / 1000),
           description: $('#websiteDescription').val()
@@ -174,7 +196,7 @@
       event.stopPropagation();
     });
 
-    var helpButtonClick = function(event) {
+    var userButtonClick = function(event) {
       var self = this;
       $.ajax({
         url: '/api/getClassHelp',
@@ -186,34 +208,33 @@
         },
         success: function(data) {
           $('#helpClassUsers').empty();
-          $('#helpClassWebsites').empty();
-          if (data.websites) {
-            data.websites.forEach(function(website, index) {
-              $('<a>',{
-                text: website.title,
-                href: website.url,
-                target: '_blank'
-              }).appendTo('#helpClassWebsites');
-              $('#helpClassWebsites').append(' ');
-              $('<a>',{
-                text: 'LOG',
-                href: '#',
-                class: 'logHelp',
-                id: 'logHelp_' + index
-              }).appendTo('#helpClassWebsites');
-              $('#helpClassWebsites').append('<br>');
-              $('#logHelp_' + index).click(function(event) {
-                $('#websiteInstance').val($(self).data('class'));
-                $('#websiteTitle').val(website.title);
-                $('#websiteURL').val(website.url);
-                $('#websiteID').val(website.id);
-                $('#logWebsiteDialog').dialog('open');
-                event.preventDefault();
-                event.stopPropagation();
-              });
-            });
-          }
-          $('#helpClassDialog').dialog('open');
+          // if (data.websites) {
+          //   data.websites.forEach(function(website, index) {
+          //     $('<a>',{
+          //       text: website.title,
+          //       href: website.url,
+          //       target: '_blank'
+          //     }).appendTo('#helpClassWebsites');
+          //     $('#helpClassWebsites').append(' ');
+          //     $('<a>',{
+          //       text: 'LOG',
+          //       href: '#',
+          //       class: 'logHelp',
+          //       id: 'logHelp_' + index
+          //     }).appendTo('#helpClassWebsites');
+          //     $('#helpClassWebsites').append('<br>');
+          //     $('#logHelp_' + index).click(function(event) {
+          //       $('#websiteInstance').val($(self).data('class'));
+          //       $('#websiteTitle').val(website.title);
+          //       $('#websiteURL').val(website.url);
+          //       $('#websiteID').val(website.id);
+          //       $('#logWebsiteDialog').dialog('open');
+          //       event.preventDefault();
+          //       event.stopPropagation();
+          //     });
+          //   });
+          // }
+          $('#userClassDialog').dialog('open');
         }
       });
       event.preventDefault();
@@ -300,6 +321,12 @@ Logs since <%= lastSunday %>:<br>
   <tbody></tbody>
 </table>
 <br>
+<p>
+  <a id="logHoursButton" href="#">Log hours</a>
+  <% websites.forEach(function(website) { %>
+    <a class="logWebsiteButton" href="#" data-title="<%= website.title %>" data-url="<%= website.url %>" data-id="<%= website.id %>">Log "<%= website.title %>"</a>
+  <% }); %>
+</p>
 <select name="semester" id="semesterSelector">
   <% semesters.forEach(function(semester, index){ %>
   <option value="<%= semester.id %>"><%= trimesterOptions[semester.trimester] %> <%= semester.year %></option>
@@ -345,15 +372,9 @@ Logs since <%= lastSunday %>:<br>
   <a id="newClassSubmit" href="#">New class</a>
 </div>
 
-<div id="helpClassDialog" title="Help">
-  <!-- <input type="hidden" id="dropClassID" value="">
-  Enter reason for dropping class:<br>
-  <input type="text" id="dropClassExcuse"><br>
-  <a id="dropClassSubmit" href="#">Drop class</a> -->
+<div id="userClassDialog" title="Help">
   Users:<br>
   <div id="helpClassUsers"></div>
-  Websites:<br>
-  <div id="helpClassWebsites"></div>
 </div>
 
 <div id="dropClassDialog" title="Drop Class">
@@ -363,18 +384,18 @@ Logs since <%= lastSunday %>:<br>
   <a id="dropClassSubmit" href="#">Drop class</a>
 </div>
 
-<div id="logHoursDialog" title="Log Hours">
+<div id="logHoursMasterDialog" title="Log Hours">
+  <select id="logHoursClass"></select><br>
   <div id="logHoursText"></div>
-  <input type="hidden" id="hoursInstance" value="">
   Write about it: <input type="text" id="hoursDescription" value=""><br>
   Number of hours: <input type="number" id="postHelpHours" value="0"><br>
-Studied with: <input type="number" id="postHelpUsers" value=""><br>
+  Studied with: <input type="number" id="postHelpUsers" value=""><br>
   <a id="logHoursSubmit" href="#">Log this</a>
 </div>
 
 <div id="logWebsiteDialog" title="Log Website">
+  <select id="logWebsiteClass"></select><br>
   <div id="logWebsiteText"></div>
-  <input type="hidden" id="websiteInstance" value="">
   <input type="hidden" id="websiteTitle" value="">
   <input type="hidden" id="websiteURL" value="">
   <input type="hidden" id="websiteID" value="">
