@@ -114,14 +114,26 @@ exports.getLogs = function(req, res) {
             lastSunday.setDate(lastSunday.getDate() - lastSunday.getDay());
             lastSunday.setHours(0, 0, 0, 0);
             helpInstances.forEach(function(helpInstance) {
-              var date = new Date(helpInstance.completedDate * 1000);
-              lastSunday.setHours(0, 0, 0, 0);
-              logs.unshift({
-                completedDate: dateFormat(date, prefs.getDateFormat()),
-                day: dateFormat(date, 'dddd'),
-                class: helpInstance.classInstance,
-                description: builder.helpInstanceText(helpInstance)
-              });
+              var addLog = function(addHelpInstance, addHelpClassText) {
+                var date = new Date(addHelpInstance.completedDate * 1000);
+                lastSunday.setHours(0, 0, 0, 0);
+                logs.unshift({
+                  completedDate: dateFormat(date, prefs.getDateFormat()),
+                  day: dateFormat(date, 'dddd'),
+                  class: addHelpClassText,
+                  description: builder.helpInstanceText(addHelpInstance)
+                });
+              };
+              if (helpInstance.classInstance && helpInstance.classInstance != '') {
+                ClassInstance.findById(helpInstance.classInstance, function(err, classInstance) {
+                  Class.findById(classInstance.class, function(err, fClass) {
+                    addLog(helpInstance, fClass.classCode + ' ' + fClass.classIdentifier);
+                  });
+                  // addLog(helpInstance, classInstance.);
+                });
+              } else {
+                addLog(helpInstance, 'Other');
+              }
             });
             res.send(logs);
           });

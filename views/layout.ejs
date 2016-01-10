@@ -6,9 +6,36 @@
 		<style>
 			html {
 				font-family: 'Questrial', sans-serif;
+				width: 100%;
+				padding: 0;
+				margin: 0;
+			}
+			body {
+				padding: 0;
+				margin: 0;
+				width: 100%;
+			}
+			table {
+				width: 100%;
+			}
+			#banner {
+				-webkit-box-shadow: inset 0px -135px 4px -134px rgba(0,0,0,0.46);
+				-moz-box-shadow: inset 0px -135px 4px -134px rgba(0,0,0,0.46);
+				box-shadow: inset 0px -135px 4px -134px rgba(0,0,0,0.46);
+				height: 150px;
+				color: white;
+				background-color: #B71C1C;
+			}
+			#bannerContents {
 				max-width: 800px;
-				margin-left: auto;
-				margin-right: auto;
+				margin: 0 auto 0 auto;
+			}
+			#nav {
+			}
+			#content {
+				max-width: 800px;
+				margin: 0 auto 0 auto;
+				padding-top: 20px;
 			}
 		</style>
 		<link href="/javascripts/jquery-ui-1.11.4/jquery-ui.min.css" rel="stylesheet">
@@ -17,14 +44,22 @@
 		<script type="text/javascript" charset="utf8" src="/javascripts/jquery-ui-1.11.4/jquery-ui.min.js"></script>
 	</head>
 	<body>
-		<p>
-			💩 |
-			<% if (!user) { %>
-			<a href="/">Home</a> | <a href="/auth/google">Log In</a>
-			<% } else { %>
-			<a href="/user"><%= user.displayName %></a> | <a href="/semesters">Semesters</a> | <a href="/logs">Logs</a> |<% if (user.isAdmin) { %> <a href="/admin">Admin</a> |<% } %> <a href="/logout">Log Out</a>
-			<% } %>
-		</p>
-		<%- body %>
+		<div id="banner">
+			<div id="bannerContents">
+				<div id="nav">
+					<% if (!user) { %>
+					<a href="/">Home</a>&nbsp;&nbsp;&nbsp;<a href="/auth/google">Log In</a>
+					<% } else { %>
+					<a href="/user"><%= user.displayName %></a>&nbsp;&nbsp;&nbsp;<a href="/semesters">Semesters</a>&nbsp;&nbsp;&nbsp;<a href="/logs">Logs</a>&nbsp;&nbsp;&nbsp;<% if (user.isAdmin) { %> <a href="/admin">Admin</a>&nbsp;&nbsp;&nbsp;<% } %><a href="/logout">Log Out</a>
+					<% } %>
+				</div>
+				<div id="bannerTitle">
+					💩log
+				</div>
+			</div>
+		</div>
+		<div id="content">
+			<%- body %>
+		</div>
 	</body>
 </html>

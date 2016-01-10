@@ -47,8 +47,7 @@
           classes = data.classes;
           classes.forEach(function(fClass) {
             semesterTable.row.add([
-              fClass.classCode,
-              fClass.classIdentifier,
+              fClass.classCode + ' ' + fClass.classIdentifier,
               '<select name="grade" class="gradeSelector" id="gradeSelector_' + fClass.id + '" data-class="' + fClass.id + '">'
               <% gradeOptions.forEach(function(gradeOption, x){ %>
               + '<option value="<%= x %>"><%= gradeOption %></option>'
@@ -294,21 +293,36 @@
     getLogs();
   });
 </script>
-<p>
-  <%= isNotUser ? user.displayName + '<br>' : '' %>
-  GPA: <%= user.reportedGPA %>
-</p>
+<select name="semester" id="semesterSelector">
+  <% semesters.forEach(function(semester, index){ %>
+  <option value="<%= semester.id %>"><%= trimesterOptions[semester.trimester] %> <%= semester.year %></option>
+  <% }); %>
+</select>&nbsp;&nbsp;&nbsp;<%= isNotUser ? user.displayName + '\'s ' : '' %>GPA: <%= user.reportedGPA %><br>
 <br>
-
-Logs since <%= lastSunday %>:<br>
 <br>
-
+<br>
+Grades:<br>
+<table id="semesterClasses">
+  <thead>
+    <tr>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+<a id="newSemesterButton" href="#">+ semester</a>&nbsp;&nbsp;&nbsp;<a id="newClassButton" href="#">+ class</a><br>
+<br>
+<br>
+<br>
+Logs this week:<br>
 <table id="userLogsTable">
   <thead>
     <tr>
-      <th>Day</th>
-      <th>Class</th>
-      <th>Description</th>
+      <th></th>
+      <th></th>
+      <th></th>
       <!--<th>Due Date</th>
       <th>Class</th>
       <th>Type</th>
@@ -320,33 +334,10 @@ Logs since <%= lastSunday %>:<br>
   </thead>
   <tbody></tbody>
 </table>
-<br>
-<p>
-  <a id="logHoursButton" href="#">Log hours</a>
-  <% websites.forEach(function(website) { %>
-    <a class="logWebsiteButton" href="#" data-title="<%= website.title %>" data-url="<%= website.url %>" data-id="<%= website.id %>">Log "<%= website.title %>"</a>
-  <% }); %>
-</p>
-<select name="semester" id="semesterSelector">
-  <% semesters.forEach(function(semester, index){ %>
-  <option value="<%= semester.id %>"><%= trimesterOptions[semester.trimester] %> <%= semester.year %></option>
-  <% }); %>
-</select><br>
-<br>
-<table id="semesterClasses">
-  <thead>
-    <tr>
-      <th>Code</th>
-      <th>Identifier</th>
-      <th>Grade</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
-<br>
-<br>
-<a id="newClassButton" href="#">Add a class</a>
+<a id="logHoursButton" href="#">+ hours</a>
+<% websites.forEach(function(website) { %>
+  &nbsp;&nbsp;&nbsp;<a class="logWebsiteButton" href="#" data-title="<%= website.title %>" data-url="<%= website.url %>" data-id="<%= website.id %>">+ "<%= website.title %>"</a>
+<% }); %>
 
 <div id="newClassDialog" title="New Class">
   <select id="newClassTrimester">
