@@ -114,9 +114,13 @@ app.put('/api/updateClassInstance', ensureAuthenticated, api.updateClassInstance
 
 app.post('/api/postNewHelpInstance', ensureAuthenticated, api.postNewHelpInstance);
 
+app.post('/api/postNewSemester', ensureAuthenticated, api.postNewSemester);
+
 app.get('/api/getClassHelp', ensureAuthenticated, api.getClassHelp);
 
 app.get('/api/getSemester', ensureAuthenticated, api.getSemester);
+
+app.get('/api/getSemesters', ensureAuthenticated, api.getSemesters);
 
 app.get('/api/getLogs', ensureAuthenticated, api.getLogs);
 

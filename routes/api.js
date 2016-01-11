@@ -16,6 +16,7 @@ var Class = require('../models/class.js');
 var builder = require('../helpers/builder');
 var prefs = require('../helpers/prefs');
 var dateFormat = require('dateformat');
+var async = require('async');
 
 exports.updateClassInstance = function(req, res){
   var data = req.body;
@@ -65,6 +66,34 @@ exports.getSemester = function(req, res) {
     res.send(response);
   });
 };
+
+exports.getSemesters = function(req, res) {
+  var data = req.query;
+  if (data.user) {
+    if (data.user == req.user.id) {
+      var calls = [];
+      req.user.semesters.forEach(function(semester) {
+        calls.push(function(response) {
+          builder.getJSONSemester({
+              user: req.user,
+              semester: semester
+            },
+            function(err, resp){
+              response(err, resp);
+            }
+          );
+        });
+      });
+      async.series(calls, function(err, obj) {
+        res.send(obj.sort(builder.sort_by('year', false, parseInt)).sort(builder.sort_by('trimester', false, parseInt)));
+      });
+    } else {
+      res.send('error');
+    }
+  } else {
+    res.send('error');
+  }
+}
 
 exports.getClassHelp = function(req, res) {
   var data = req.query;
@@ -150,9 +179,6 @@ exports.getLogs = function(req, res) {
 }
 
 exports.postNewAdminHelpInstance = function(req, res) {
-  /*
-  createdAt, updatedAt, requested, completed, hours, websiteTitle, websiteURL, description, helpType, dueDate, completedDate, classInstance, users
-  */
   var data = req.body;
   if (data.classInstance && data.user && data.dueDate) {
     var helpInstance = new HelpInstance({
@@ -233,6 +259,39 @@ exports.postNewHelpInstance = function(req, res) {
         res.send(helpInstance);
       });
     });
+  } else {
+    res.send('error');
+  }
+}
+
+exports.postNewSemester = function(req, res) {
+  var data = req.body;
+  if (data.user && data.trimester && data.year) {
+    if (data.user == req.user.id) {
+      Semester.findOne({
+        user: data.user,
+        trimester: data.trimester,
+        year: data.year
+      }).exec(function(err, semester) {
+        if (!err && semester) {
+          res.send('error');
+        } else {
+          var semester = new Semester({
+            user: data.user,
+            trimester: data.trimester,
+            year: data.year
+          });
+          semester.save(function(err) {
+            req.user.semesters.unshift(semester.id);
+            req.user.updatedAt = builder.currentEpochTime();
+            req.user.save();
+            res.send(semester);
+          });
+        }
+      });
+    } else {
+      res.send('error');
+    }
   } else {
     res.send('error');
   }

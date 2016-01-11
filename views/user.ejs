@@ -24,6 +24,10 @@
       autoOpen: false
     });
 
+    $('#newSemesterDialog').dialog({
+      autoOpen: false
+    });
+
     $('#logHoursMasterDialog').dialog({
       autoOpen: false
     });
@@ -43,7 +47,11 @@
           user: '<%= user._id %>'
         },
         success: function(data) {
-          semesterTable.clear();
+          console.log('ok');
+          $('#newClassTrimester').text(data.trimesterLabel);
+          $('#newClassYear').text(data.year);
+          semesterTable.clear().draw();
+          console.log('oker');
           classes = data.classes;
           classes.forEach(function(fClass) {
             semesterTable.row.add([
@@ -55,7 +63,7 @@
               + '</select>',
               '<a class="gradeUserButton" id="gradeUserButton_' + fClass.id + '" data-class="' + fClass.id + '" href="#">USERS</a>'
               + ' <a class="gradeDropButton" id="gradeDropButton_' + fClass.id + '" data-class="' + fClass.id + '" href="#">DROP</a>'
-            ]).draw( false );
+            ]).draw();
             $('#gradeSelector_' + fClass.id + ' option')[fClass.grade].selected = true;
             $('#gradeSelector_' + fClass.id).change(gradeSelectorChanged);
             $('#gradeUserButton_' + fClass.id).click(userButtonClick);
@@ -90,6 +98,28 @@
               // helpInstance.helpingUsers
             ]).draw( false );
           });
+        }
+      });
+    };
+
+    var getSemesters = function(selectedTrimester, selectedYear) {
+      var self = this;
+      $.ajax({
+        url: '/api/getSemesters',
+        method: 'GET',
+        contentType: 'application/json; charset=utf-8',
+        data: {
+          user: '<%= user._id %>'
+        },
+        success: function(data) {
+          $("#semesterSelector").html('');
+          data.forEach(function(semester) {
+            $("#semesterSelector").append($("<option />").val(semester.id).text(semester.trimesterLabel + ' ' + semester.year));
+            if (selectedTrimester == semester.trimester && selectedYear == semester.year) {
+              $('#semesterSelector option[value=' + semester.id + ']').prop('selected', 'selected');
+            }
+          });
+          $('#semesterSelector').change();
         }
       });
     };
@@ -253,6 +283,31 @@
       event.stopPropagation();
     });
 
+    $('#newSemesterButton').click(function(event) {
+      $('#newSemesterDialog').dialog('open');
+      event.preventDefault();
+      event.stopPropagation();
+    });
+
+    $('#newSemesterSubmit').click(function(event) {
+      $.ajax({
+        url: '/api/postNewSemester',
+        method: 'POST',
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify({
+          user: '<%= user._id %>',
+          trimester: $('#newSemesterTrimester').val(),
+          year: $('#newSemesterYear').val()
+        }),
+        success: function(data) {
+          getSemesters($('#newSemesterTrimester').val(), $('#newSemesterYear').val());
+          $('#newSemesterDialog').dialog('close');
+        }
+      });
+      event.preventDefault();
+      event.stopPropagation();
+    });
+
     $('#dropClassSubmit').click(function(event) {
       $.ajax({
         url: '/api/dropClassInstance',
@@ -289,15 +344,13 @@
       event.preventDefault();
       event.stopPropagation();
     });
-    $('#semesterSelector').change();
+    getSemesters('', '');
     getLogs();
   });
 </script>
-<select name="semester" id="semesterSelector">
-  <% semesters.forEach(function(semester, index){ %>
-  <option value="<%= semester.id %>"><%= trimesterOptions[semester.trimester] %> <%= semester.year %></option>
-  <% }); %>
-</select>&nbsp;&nbsp;&nbsp;<%= isNotUser ? user.displayName + '\'s ' : '' %>GPA: <%= user.reportedGPA %><br>
+<select name="semester" id="semesterSelector"></select>&nbsp;&nbsp;&nbsp;<a id="newSemesterButton" href="#">+ semester</a><br>
+<br>
+<%= isNotUser ? user.displayName + '\'s ' : '' %>GPA: <%= user.reportedGPA %><br>
 <br>
 <br>
 <br>
@@ -312,7 +365,7 @@ Grades:<br>
   </thead>
   <tbody></tbody>
 </table>
-<a id="newSemesterButton" href="#">+ semester</a>&nbsp;&nbsp;&nbsp;<a id="newClassButton" href="#">+ class</a><br>
+<a id="newClassButton" href="#">+ class</a><br>
 <br>
 <br>
 <br>
@@ -335,21 +388,28 @@ Logs this week:<br>
   <tbody></tbody>
 </table>
 <a id="logHoursButton" href="#">+ hours</a>
-<% websites.forEach(function(website) { %>
-  &nbsp;&nbsp;&nbsp;<a class="logWebsiteButton" href="#" data-title="<%= website.title %>" data-url="<%= website.url %>" data-id="<%= website.id %>">+ "<%= website.title %>"</a>
-<% }); %>
+<%// websites.forEach(function(website) { %>
+  <!--&nbsp;&nbsp;&nbsp;<a class="logWebsiteButton" href="#" data-title="<%//= website.title %>" data-url="<%//= website.url %>" data-id="<%//= website.id %>">+ "<%//= website.title %>"</a> -->
+<%// }); %>
 
-<div id="newClassDialog" title="New Class">
-  <select id="newClassTrimester">
+<div id="newSemesterDialog" title="New Semester">
+  <select id="newSemesterTrimester">
   	<option value="0">Spring</option>
   	<option value="1">Summer</option>
   	<option value="2">Fall</option>
   </select>
-  <select id="newClassYear">
+  <select id="newSemesterYear">
     <% yearOptions.forEach(function(yearOption){ %>
   	<option value="<%= yearOption %>"><%= yearOption %></option>
     <% }); %>
   </select>
+  <br>
+  <br>
+  <a id="newSemesterSubmit" href="#">New semester</a>
+</div>
+
+<div id="newClassDialog" title="New Class">
+  <span id="newClassTrimester" data-trimester=""></span> <span id="newClassYear" data-year=""></span>
   <br>
   <select id="newClassCode">
     <% courseOptions.forEach(function(courseOption){ %>

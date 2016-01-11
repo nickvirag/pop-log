@@ -85,6 +85,7 @@ exports.getJSONSemester = function(data, callback) {
           async.series(calls, function(err, obj){
             callback(err, {
               trimester: semester.trimester,
+              trimesterLabel: prefs.getTrimesterOptions()[semester.trimester],
               year: semester.year,
               id: semester.id,
               classes: obj
