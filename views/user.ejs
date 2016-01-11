@@ -13,26 +13,32 @@
       bInfo: false
     });
     $('#userClassDialog').dialog({
+      modal: true,
       autoOpen: false
     });
 
     $('#dropClassDialog').dialog({
+      modal: true,
       autoOpen: false
     });
 
     $('#newClassDialog').dialog({
+      modal: true,
       autoOpen: false
     });
 
     $('#newSemesterDialog').dialog({
+      modal: true,
       autoOpen: false
     });
 
     $('#logHoursMasterDialog').dialog({
+      modal: true,
       autoOpen: false
     });
 
     $('#logWebsiteDialog').dialog({
+      modal: true,
       autoOpen: false
     });
 
@@ -122,6 +128,9 @@
             }
           });
           if (data.length == 0) {
+            $('#newSemesterDialog').dialog({
+              dialogClass: 'dialog-no-close'
+            });
             $('#newSemesterButton').click();
           }
           $('#semesterSelector').change();
@@ -301,6 +310,7 @@
         }),
         success: function(data) {
           getSemesters($('#newSemesterTrimester').val(), $('#newSemesterYear').val());
+          $('#newSemesterDialog').dialog('option', 'dialogClass', '');
           $('#newSemesterDialog').dialog('close');
         }
       });

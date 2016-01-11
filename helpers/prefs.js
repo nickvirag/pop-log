@@ -85,6 +85,10 @@ exports.getHelpWebsites = function() {
   return jsonContent.help.websites;
 }
 
+exports.getLabel = function() {
+  return jsonContent.label;
+}
+
 exports.getHelpWebsiteByID = function(id) {
   var response = {};
   var BreakException = {};
