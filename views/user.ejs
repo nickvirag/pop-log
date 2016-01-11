@@ -189,8 +189,6 @@
       });
       $("#logHoursClass").append($("<option />").val('').text('Other'));
       $('#logHoursMasterDialog').dialog('open');
-      event.preventDefault();
-      event.stopPropagation();
     });
 
     $('.logWebsiteButton').click(function(event) {
@@ -285,14 +283,10 @@
 
     $('#newClassButton').click(function(event) {
       $('#newClassDialog').dialog('open');
-      event.preventDefault();
-      event.stopPropagation();
     });
 
     $('#newSemesterButton').click(function(event) {
       $('#newSemesterDialog').dialog('open');
-      event.preventDefault();
-      event.stopPropagation();
     });
 
     $('#newSemesterSubmit').click(function(event) {
@@ -355,50 +349,60 @@
     getLogs();
   });
 </script>
-<select name="semester" id="semesterSelector"></select>&nbsp;&nbsp;&nbsp;<a id="newSemesterButton" href="#">+ semester</a><br>
+<div class="details">
+<select name="semester" id="semesterSelector"></select>&nbsp;&nbsp;&nbsp;<button id="newSemesterButton">+</button><br>
 <br>
 <%= isNotUser ? user.displayName + '\'s ' : '' %>GPA: <%= user.reportedGPA %><br>
-Hours this week: <span id="hoursLogged">0</span><br>
-<br>
-<hr>
-<br>
-Classes:<br>
-<table id="semesterClasses">
-  <thead>
-    <tr>
-      <th></th>
-      <th></th>
-      <th></th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
-<a id="newClassButton" href="#">+ class</a><br>
-<br>
-<hr>
-<br>
-Logs this week:<br>
-<table id="userLogsTable">
-  <thead>
-    <tr>
-      <th></th>
-      <th></th>
-      <th></th>
-      <!--<th>Due Date</th>
-      <th>Class</th>
-      <th>Type</th>
-      <th>Hours</th>
-      <th>Website</th>
-      <th>Description</th>
-      <th>Helping users</th>-->
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
-<a id="logHoursButton" href="#">+ hours</a>
-<%// websites.forEach(function(website) { %>
-  <!--&nbsp;&nbsp;&nbsp;<a class="logWebsiteButton" href="#" data-title="<%//= website.title %>" data-url="<%//= website.url %>" data-id="<%//= website.id %>">+ "<%//= website.title %>"</a> -->
-<%// }); %>
+Hours this week: <span id="hoursLogged">0</span>
+</div>
+<div class="mainContents">
+  <div class="card">
+    <div class="cardContents">
+      <div class="cardTitle">CLASSES</div>
+      <table id="semesterClasses">
+        <thead>
+          <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table><br>
+      <div class="addButtonContainer">
+        <button id="newClassButton">+</button>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="cardContents">
+      <div class="cardTitle">LOGS THIS WEEK</div>
+      <table id="userLogsTable">
+        <thead>
+          <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+            <!--<th>Due Date</th>
+            <th>Class</th>
+            <th>Type</th>
+            <th>Hours</th>
+            <th>Website</th>
+            <th>Description</th>
+            <th>Helping users</th>-->
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table><br>
+      <div class="addButtonContainer">
+        <button id="logHoursButton">+</button>
+        <%// websites.forEach(function(website) { %>
+        <!--&nbsp;&nbsp;&nbsp;<a class="logWebsiteButton" href="#" data-title="<%//= website.title %>" data-url="<%//= website.url %>" data-id="<%//= website.id %>">+ "<%//= website.title %>"</a> -->
+        <%// }); %>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div id="newSemesterDialog" title="New Semester">
   <select id="newSemesterTrimester">

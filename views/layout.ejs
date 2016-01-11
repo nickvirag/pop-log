@@ -25,20 +25,84 @@
 				height: 150px;
 				color: white;
 				background-color: #B71C1C;
+				position: relative;
+				overflow: auto;
 			}
 			#bannerContents {
 				max-width: 800px;
 				margin: 0 auto 0 auto;
+				top: 50%;
+				left: 50%;
+				position: absolute;
+				transform: translateY(-50%);
+			}
+			#bannerNestedContents {
+				position: relative;
+				left: -50%;
+			}
+			#banner a:link {
+				color: white;
+			}
+			#banner a:visited {
+				color: white;
+			}
+			#banner a:hover {
+				color: white;
+			}
+			#banner a:active {
+				color: white;
 			}
 			#nav {
+			}
+			#bannerTitle {
+				font-size: 3em;
 			}
 			#content {
 				max-width: 800px;
 				margin: 0 auto 0 auto;
-				padding-top: 20px;
+				padding-top: 40px;
+			}
+			#content a:link {
+				color: black;
+			}
+			#content a:visited {
+				color: black;
+			}
+			#content a:hover {
+				color: black;
+			}
+			#content a:active {
+				color: black;
 			}
 			.dataTables_empty {
 				display: none;
+			}
+			.details {
+				width: 25%;
+				float: left;
+			}
+			.mainContents {
+				width: 75%;
+				float: left;
+			}
+			.card {
+				width: 100%;
+				background-color: #F5F5F5;
+				-webkit-box-shadow: 0px 2px 4px -1px rgba(125,125,125,1);
+				-moz-box-shadow: 0px 2px 4px -1px rgba(125,125,125,1);
+				box-shadow: 0px 2px 4px -1px rgba(125,125,125,1);
+				margin-bottom: 40px;
+			}
+			.cardContents {
+				padding: 40px;
+			}
+			.cardTitle {
+				font-size: 1.5em;
+				color: #BDBDBD;
+				margin-bottom: 10px;
+			}
+			.addButtonContainer {
+				text-align: right;
 			}
 		</style>
 		<link href="/javascripts/jquery-ui-1.11.4/jquery-ui.min.css" rel="stylesheet">
@@ -49,15 +113,17 @@
 	<body>
 		<div id="banner">
 			<div id="bannerContents">
-				<div id="nav">
-					<% if (!user) { %>
-					<a href="/">Home</a>&nbsp;&nbsp;&nbsp;<a href="/auth/google">Log In</a>
-					<% } else { %>
-					<a href="/user"><%= user.displayName %></a>&nbsp;&nbsp;&nbsp;<a href="/library">Library</a>&nbsp;&nbsp;&nbsp;<a href="/logout">Log Out</a>
-					<% } %>
-				</div>
-				<div id="bannerTitle">
-					💩log
+				<div id="bannerNestedContents">
+					<span id="bannerTitle">
+						💩log
+					</span>
+					<span id="nav">
+						<% if (!user) { %>
+						<a href="/">Home</a>&nbsp;&nbsp;&nbsp;<a href="/auth/google">Log In</a>
+						<% } else { %>
+						<a href="/user"><%= user.displayName %></a>&nbsp;&nbsp;&nbsp;<a href="/library">Library</a>&nbsp;&nbsp;&nbsp;<a href="/logout">Log Out</a>
+						<% } %>
+					</span>
 				</div>
 			</div>
 		</div>
