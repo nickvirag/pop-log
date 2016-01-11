@@ -45,7 +45,7 @@ var userSchema = new mongoose.Schema({
     ref: 'Semester',
     default: []
   }],
-  _id: Number
+  googleID: Number
 });
 
 module.exports = mongoose.model('User', userSchema);

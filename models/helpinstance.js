@@ -47,7 +47,8 @@ var helpInstanceSchema = new mongoose.Schema({
     default: null
   },
   users: [{
-    type: Number
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   }]
 });
 

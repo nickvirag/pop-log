@@ -54,8 +54,12 @@ var renderUser = function(res, user, isNotUser){
   });
 }
 
-exports.get = function(req, res){
-  renderUser(res, req.user, false);
+exports.get = function(req, res) {
+  if (req.user.isAdmin) {
+    res.redirect('/admin');
+  } else {
+    renderUser(res, req.user, false);
+  }
 };
 
 exports.getById = function(req, res){

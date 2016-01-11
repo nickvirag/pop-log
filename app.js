@@ -13,6 +13,7 @@ var login = require('./routes/login');
 var api = require('./routes/api');
 var logs = require('./routes/logs');
 var fClass = require('./routes/class');
+var admin = require('./routes/admin');
 
 var prefs = require('./helpers/prefs');
 
@@ -48,7 +49,7 @@ passport.serializeUser(function(user, done) {
 
 passport.deserializeUser(function(id, done) {
   User.findOne({
-    _id: id
+    googleID: id
   }).exec( function(err, user) {
     done(err, user);
   });
@@ -62,14 +63,16 @@ passport.use(new GoogleStrategy({
   },
   function(request, accessToken, refreshToken, profile, done) {
     process.nextTick(function () {
-      User.findById(profile.id, function(err, user) {
+      User.findOne({
+        email: profile.email
+      }).exec(function(err, user) {
         if (!user) {
           user = new User({
             firstName: profile.name.givenName,
             lastName: profile.name.familyName,
             displayName: profile.displayName,
             email: profile.email,
-            _id: profile.id
+            googleID: profile.id
           });
           user.save();
         }
@@ -108,6 +111,8 @@ app.get('/semesters/*', ensureAuthenticated, semesters.getById);
 app.get('/semesters', ensureAuthenticated, semesters.get);
 
 app.get('/logs', ensureAuthenticated, logs.get);
+
+app.get('/admin', ensureAdmin, admin.get);
 
 app.post('/api/newClassInstance', ensureAuthenticated, api.postNewClassInstance);
 app.put('/api/updateClassInstance', ensureAuthenticated, api.updateClassInstance);
@@ -151,6 +156,17 @@ app.get('/logout', function(req, res){
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
     return next();
+  }
+  res.redirect('/login');
+}
+
+function ensureAdmin(req, res, next) {
+  if (req.isAuthenticated()) {
+    if (req.user.isAdmin) {
+      return next();
+    } else {
+      res.redirect('/user');
+    }
   }
   res.redirect('/login');
 }

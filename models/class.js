@@ -16,7 +16,8 @@ var classSchema = new mongoose.Schema({
     default: ''
   },
   users: [{
-    type: Number,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     default: []
   }],
   classInstances: [{

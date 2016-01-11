@@ -22,7 +22,8 @@ var classInstanceSchema = new mongoose.Schema({
     default: ''
   },
   user: {
-    type: Number,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     default: null
   },
   semester: {

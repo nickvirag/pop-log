@@ -133,49 +133,9 @@ exports.getClassHelp = function(req, res) {
 
 exports.getLogs = function(req, res) {
   var data = req.query;
-  if (data.user) {
-    if (req.user.id == data.user) {
-      User.findById(data.user, function(err, user) {
-        if (!err && user) {
-          builder.arrayToObjects(HelpInstance, user.helpInstances, function(err, helpInstances) {
-            var logs = [];
-            var lastSunday = new Date();
-            lastSunday.setDate(lastSunday.getDate() - lastSunday.getDay());
-            lastSunday.setHours(0, 0, 0, 0);
-            helpInstances.forEach(function(helpInstance) {
-              var addLog = function(addHelpInstance, addHelpClassText) {
-                var date = new Date(addHelpInstance.completedDate * 1000);
-                lastSunday.setHours(0, 0, 0, 0);
-                logs.unshift({
-                  completedDate: dateFormat(date, prefs.getDateFormat()),
-                  day: dateFormat(date, 'dddd'),
-                  class: addHelpClassText,
-                  description: builder.helpInstanceText(addHelpInstance)
-                });
-              };
-              if (helpInstance.classInstance && helpInstance.classInstance != '') {
-                ClassInstance.findById(helpInstance.classInstance, function(err, classInstance) {
-                  Class.findById(classInstance.class, function(err, fClass) {
-                    addLog(helpInstance, fClass.classCode + ' ' + fClass.classIdentifier);
-                  });
-                  // addLog(helpInstance, classInstance.);
-                });
-              } else {
-                addLog(helpInstance, 'Other');
-              }
-            });
-            res.send(logs);
-          });
-        } else {
-          res.send('error');
-        }
-      });
-    } else {
-      res.send('user mismatch error');
-    }
-  } else {
-    res.send('missing parameters error');
-  }
+  builder.getJSONLogs(req.user, data, function(err, response){
+    res.send(response);
+  });
 }
 
 exports.postNewAdminHelpInstance = function(req, res) {
@@ -205,8 +165,8 @@ exports.postNewAdminHelpInstance = function(req, res) {
 exports.postNewHelpInstance = function(req, res) {
   var data = req.body;
   if (data.helpType && data.user && data.completedDate && data.description
-    && ((data.helpType == 0 && data.hours)
-      || (data.helpType == 1 && data.websiteID))) {
+    && ((data.helpType == "0" && data.hours)
+      || (data.helpType == "1" && data.websiteID))) {
     var users = [];
     if (data.helpingUsers) {
       users = data.helpingUsers;
@@ -299,6 +259,8 @@ exports.postNewSemester = function(req, res) {
 
 exports.postNewClassInstance = function(req, res){
   var data = req.body;
+  console.log(data);
+  console.log(data.trimester && data.year && data.classCode && data.classIdentifier && data.user);
   if (data.trimester && data.year && data.classCode && data.classIdentifier && data.user) {
     if (req.user.id == data.user) {
       var createWithSemesterAndClass = function(semester, fClass) {

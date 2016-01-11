@@ -14,7 +14,8 @@ var semesterSchema = new mongoose.Schema({
   trimester: Number,
   year: Number,
   user: {
-    type: Number
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   },
   classInstances: [{
     type: mongoose.Schema.Types.ObjectId,

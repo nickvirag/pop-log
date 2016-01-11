@@ -47,22 +47,21 @@
           user: '<%= user._id %>'
         },
         success: function(data) {
-          console.log('ok');
           $('#newClassTrimester').text(data.trimesterLabel);
+          $('#newClassTrimester').data('trimester', data.trimester);
           $('#newClassYear').text(data.year);
+          $('#newClassYear').data('year', data.year);
           semesterTable.clear().draw();
-          console.log('oker');
           classes = data.classes;
           classes.forEach(function(fClass) {
             semesterTable.row.add([
-              fClass.classCode + ' ' + fClass.classIdentifier,
+              '<a class="gradeUserButton" id="gradeUserButton_' + fClass.id + '" data-class="' + fClass.id + '" href="#">' + fClass.classCode + ' ' + fClass.classIdentifier + '</a>',
               '<select name="grade" class="gradeSelector" id="gradeSelector_' + fClass.id + '" data-class="' + fClass.id + '">'
               <% gradeOptions.forEach(function(gradeOption, x){ %>
               + '<option value="<%= x %>"><%= gradeOption %></option>'
               <% }); %>
               + '</select>',
-              '<a class="gradeUserButton" id="gradeUserButton_' + fClass.id + '" data-class="' + fClass.id + '" href="#">USERS</a>'
-              + ' <a class="gradeDropButton" id="gradeDropButton_' + fClass.id + '" data-class="' + fClass.id + '" href="#">DROP</a>'
+              '<a class="gradeDropButton" id="gradeDropButton_' + fClass.id + '" data-class="' + fClass.id + '" href="#">DROP</a>'
             ]).draw();
             $('#gradeSelector_' + fClass.id + ' option')[fClass.grade].selected = true;
             $('#gradeSelector_' + fClass.id).change(gradeSelectorChanged);
@@ -84,6 +83,7 @@
         },
         success: function(data) {
           userLogsTable.clear();
+          var hoursLogged = 0;
           data.forEach(function(helpInstance) {
             userLogsTable.row.add([
               helpInstance.day,
@@ -97,7 +97,9 @@
               // helpInstance.description,
               // helpInstance.helpingUsers
             ]).draw( false );
+            hoursLogged += helpInstance.hours;
           });
+          $('#hoursLogged').text(hoursLogged);
         }
       });
     };
@@ -119,6 +121,9 @@
               $('#semesterSelector option[value=' + semester.id + ']').prop('selected', 'selected');
             }
           });
+          if (data.length == 0) {
+            $('#newSemesterButton').click();
+          }
           $('#semesterSelector').change();
         }
       });
@@ -154,13 +159,13 @@
     $('#newClassIdentifier').keydown(fourDigitNumberInput);
     $('#newClassCRN').keydown(fourDigitNumberInput);
 
-    $('.logHoursSubmit').click(function(event) {
+    $('#logHoursSubmit').click(function(event) {
       $.ajax({
         url: '/api/postNewHelpInstance',
         method: 'POST',
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify({
-          helpType: 0,
+          helpType: "0",
           hours: $('#postHelpHours').val(),
           classInstance: $('#logHoursClass').val(),
           user: '<%= user._id %>',
@@ -169,6 +174,7 @@
         }),
         success: function(data) {
           getLogs();
+          $('#logHoursMasterDialog').dialog('close');
         }
       });
 
@@ -208,7 +214,7 @@
         method: 'POST',
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify({
-          helpType: 1,
+          helpType: "1",
           websiteID: $('#websiteID').val(),
           classInstance: $('#logWebsiteClass').val(),
           user: '<%= user._id %>',
@@ -332,12 +338,13 @@
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify({
           user: '<%= user._id %>',
-          trimester: $('#newClassTrimester').val(),
-          year: $('#newClassYear').val(),
+          trimester: $('#newClassTrimester').data('trimester').toString(),
+          year: $('#newClassYear').data('year').toString(),
           classCode: $('#newClassCode').val(),
           classIdentifier: $('#newClassIdentifier').val()
         }),
         success: function(data) {
+          $('#semesterSelector').change();
           $('#newClassDialog').dialog('close');
         }
       });
@@ -351,10 +358,11 @@
 <select name="semester" id="semesterSelector"></select>&nbsp;&nbsp;&nbsp;<a id="newSemesterButton" href="#">+ semester</a><br>
 <br>
 <%= isNotUser ? user.displayName + '\'s ' : '' %>GPA: <%= user.reportedGPA %><br>
+Hours this week: <span id="hoursLogged">0</span><br>
 <br>
+<hr>
 <br>
-<br>
-Grades:<br>
+Classes:<br>
 <table id="semesterClasses">
   <thead>
     <tr>
@@ -367,7 +375,7 @@ Grades:<br>
 </table>
 <a id="newClassButton" href="#">+ class</a><br>
 <br>
-<br>
+<hr>
 <br>
 Logs this week:<br>
 <table id="userLogsTable">
@@ -405,7 +413,7 @@ Logs this week:<br>
   </select>
   <br>
   <br>
-  <a id="newSemesterSubmit" href="#">New semester</a>
+  <a id="newSemesterSubmit" href="#">Register for this semester</a>
 </div>
 
 <div id="newClassDialog" title="New Class">
@@ -440,7 +448,7 @@ Logs this week:<br>
   <div id="logHoursText"></div>
   Write about it: <input type="text" id="hoursDescription" value=""><br>
   Number of hours: <input type="number" id="postHelpHours" value="0"><br>
-  Studied with: <input type="number" id="postHelpUsers" value=""><br>
+  <!--Studied with: <input type="number" id="postHelpUsers" value=""><br>-->
   <a id="logHoursSubmit" href="#">Log this</a>
 </div>
 
