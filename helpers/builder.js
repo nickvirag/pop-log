@@ -63,39 +63,51 @@ exports.helpInstanceText = function(helpInstance) {
   return description;
 }
 
-exports.getJSONSemester = function(data, callback) {
+exports.getJSONSemester = function(user, data, callback) {
   if (data.user && data.semester) {
-    Semester.findById(data.semester, function(err, semester) {
-      if (!err && semester) {
-        exports.arrayToObjects(ClassInstance, semester.classInstances, function(err, classInstances){
-          var calls = [];
-          classInstances.forEach(function(classInstance){
-            if (classInstance.isEnrolled) {
-              calls.push(function(response){
-                Class.findById(classInstance.class, function(err, fClass){
-                  response(err, {
-                    grade: classInstance.grade,
-                    isEnrolled: classInstance.isEnrolled,
-                    classCode: (fClass.classCode || '   '),
-                    classIdentifier: (fClass.classIdentifier || 000),
-                    id: classInstance._id
+    if (user.id == data.user) {
+      User.findById(data.user, function(err, user) {
+        if (!err && user) {
+          Semester.findById(data.semester, function(err, semester) {
+            if (!err && semester) {
+              exports.arrayToObjects(ClassInstance, semester.classInstances, function(err, classInstances) {
+                var calls = [];
+                classInstances.forEach(function(classInstance) {
+                  if (classInstance.isEnrolled) {
+                    calls.push(function(response){
+                      Class.findById(classInstance.class, function(err, fClass) {
+                        response(err, {
+                          grade: classInstance.grade,
+                          isEnrolled: classInstance.isEnrolled,
+                          classCode: (fClass.classCode || '   '),
+                          classIdentifier: (fClass.classIdentifier || 000),
+                          id: classInstance._id
+                        });
+                      });
+                    });
+                  }
+                });
+                prefs.getTrimesterOptions(user.organization, function(err, trimesterOptions) {
+                  async.series(calls, function(err, obj) {
+                    callback(err, {
+                      trimester: semester.trimester,
+                      trimesterLabel: trimesterOptions[semester.trimester],
+                      year: semester.year,
+                      id: semester.id,
+                      classes: obj
+                    });
                   });
                 });
               });
             }
           });
-          async.series(calls, function(err, obj){
-            callback(err, {
-              trimester: semester.trimester,
-              trimesterLabel: prefs.getTrimesterOptions()[semester.trimester],
-              year: semester.year,
-              id: semester.id,
-              classes: obj
-            });
-          });
-        });
-      }
-    });
+        } else {
+          callback('error', {});
+        }
+      });
+    } else {
+      callback('error', {});
+    }
   } else {
     callback('error', {});
   }

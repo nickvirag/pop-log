@@ -77,10 +77,6 @@ passport.use(new GoogleStrategy({
           });
           user.save();
         }
-        if (profile.email == prefs.getAdminOverride() && !user.isAdmin) {
-          user.isAdmin = true;
-          user.save();
-        }
       });
       return done(null, profile);
     });

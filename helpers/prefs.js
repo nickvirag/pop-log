@@ -4,28 +4,34 @@ var app = express();
 
 var fs = require('fs');
 
+var Organization = require('../models/organization');
+
 var contents = fs.readFileSync('./prefs.json');
 var jsonContent = JSON.parse(contents);
 
-exports.getGradeOptions = function() {
-  return jsonContent.classes.grades;
-}
+exports.getGradeOptions = function(id, callback) {
+  Organization.findById(id, function(err, organization) {
+    callback(err, organization.classGrades);
+  });
+};
 
-exports.getCourseOptions = function() {
-  return jsonContent.classes.types;
-}
+exports.getCourseOptions = function(id, callback) {
+  Organization.findById(id, function(err, organization) {
+    callback(err, organization.classTypes);
+  });
+};
 
-exports.getTrimesterOptions = function() {
+exports.getTrimesterOptions = function(id, callback) {
   var semesters = [];
   jsonContent.classes.semesters.forEach(function(semester) {
     semesters.push(semester.label);
   });
-  return semesters;
-}
+  callback(null, semesters);
+};
 
 exports.getDateFormat = function() {
   return 'dddd, mmmm dS, h:MM:ss TT';
-}
+};
 
 exports.getCurrentTrimester = function() {
   var date = new Date();
@@ -53,41 +59,41 @@ exports.getCurrentTrimester = function() {
     }
   }
   return currentSemester;
-}
+};
 
 exports.getCurrentYear = function () {
   return new Date().getYear();
-}
+};
 
 exports.getDatabaseURI = function() {
   return jsonContent.database.uri;
-}
+};
 
 exports.getGoogleClientID = function() {
   return jsonContent.auth.google.client_id;
-}
+};
 
 exports.getGoogleClientSecret = function() {
   return jsonContent.auth.google.client_secret;
-}
+};
 
 exports.getDatabaseURI = function() {
   return jsonContent.database.uri;
-}
+};
 
 exports.getYearOptions = function() {
   var today = new Date();
   var year = today.getFullYear();
   return (today.getMonth() < 9) ? [year] : [year, year + 1];
-}
+};
 
 exports.getHelpWebsites = function() {
   return jsonContent.help.websites;
-}
+};
 
 exports.getLabel = function() {
   return jsonContent.label;
-}
+};
 
 exports.getHelpWebsiteByID = function(id) {
   var response = {};
@@ -105,8 +111,4 @@ exports.getHelpWebsiteByID = function(id) {
     }
   }
   return response;
-}
-
-exports.getAdminOverride = function() {
-  return jsonContent.override.admin;
-}
+};

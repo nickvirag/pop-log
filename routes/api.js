@@ -63,7 +63,7 @@ exports.dropClassInstance = function(req, res){
 
 exports.getSemester = function(req, res) {
   var data = req.query;
-  builder.getJSONSemester(data, function(err, response){
+  builder.getJSONSemester(req.user, data, function(err, response){
     res.send(response);
   });
 };
@@ -75,8 +75,8 @@ exports.getSemesters = function(req, res) {
       var calls = [];
       req.user.semesters.forEach(function(semester) {
         calls.push(function(response) {
-          builder.getJSONSemester({
-              user: req.user,
+          builder.getJSONSemester(req.user, {
+              user: req.user.id,
               semester: semester
             },
             function(err, resp){

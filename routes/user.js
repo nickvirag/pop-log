@@ -19,36 +19,26 @@ var ClassInstance = require('../models/classinstance.js');
 var Class = require('../models/class.js');
 
 var renderUser = function(res, user, isNotUser){
-  var calls = [];
-  user.semesters.forEach(function(semester) {
-    calls.push(function(response){
-      builder.getJSONSemester({
-          user: user,
-          semester: semester
-        },
-        function(err, resp){
-          response(err, resp);
-        }
-      );
-    });
-  });
-  async.series(calls, function(err, obj){
-    builder.arrayToObjects(HelpInstance, user.helpInstances, function(err, helpInstances){
-      var lastSunday = new Date();
-      lastSunday.setDate(lastSunday.getDate() - lastSunday.getDay());
-      lastSunday.setHours(0, 0, 0, 0);
-      res.render('user', {
-        user: user,
-        isNotUser: isNotUser,
-        semesters: obj.sort(builder.sort_by('year', false, parseInt)).sort(builder.sort_by('trimester', false, parseInt)),
-        gradeOptions: prefs.getGradeOptions(),
-        yearOptions: prefs.getYearOptions(),
-        courseOptions: prefs.getCourseOptions(),
-        trimesterOptions: prefs.getTrimesterOptions(),
-        currentTrimester: prefs.getCurrentTrimester(),
-        lastSunday: dateFormat(lastSunday, prefs.getDateFormat()),
-        helpInstances: helpInstances,
-        websites: prefs.getHelpWebsites()
+  builder.arrayToObjects(HelpInstance, user.helpInstances, function(err, helpInstances){
+    var lastSunday = new Date();
+    lastSunday.setDate(lastSunday.getDate() - lastSunday.getDay());
+    lastSunday.setHours(0, 0, 0, 0);
+    prefs.getGradeOptions(user.organization, function(err, gradeOptions) {
+      prefs.getCourseOptions(user.organization, function(err, courseOptions) {
+        prefs.getTrimesterOptions(user.organization, function(err, trimesterOptions) {
+          res.render('user', {
+            user: user,
+            isNotUser: isNotUser,
+            gradeOptions: gradeOptions,
+            yearOptions: prefs.getYearOptions(),
+            courseOptions: courseOptions,
+            trimesterOptions: trimesterOptions,
+            currentTrimester: prefs.getCurrentTrimester(),
+            lastSunday: dateFormat(lastSunday, prefs.getDateFormat()),
+            helpInstances: helpInstances,
+            websites: prefs.getHelpWebsites()
+          });
+        });
       });
     });
   });
