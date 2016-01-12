@@ -41,6 +41,10 @@ var helpInstanceSchema = new mongoose.Schema({
     type: Number,
     default: null
   },
+  organization: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Organization'
+  },
   classInstance: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'ClassInstance',

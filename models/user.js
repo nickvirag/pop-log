@@ -25,6 +25,11 @@ var userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  organization: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Organization',
+    default: null
+  },
   classes: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Class',

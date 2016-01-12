@@ -12,6 +12,7 @@ var Semester = require('../models/semester.js');
 var ClassInstance = require('../models/classinstance.js');
 var HelpInstance = require('../models/helpinstance.js');
 var Class = require('../models/class.js');
+var Organization = require('../models/organization.js');
 
 var builder = require('../helpers/builder');
 var prefs = require('../helpers/prefs');
@@ -136,7 +137,90 @@ exports.getLogs = function(req, res) {
   builder.getJSONLogs(req.user, data, function(err, response){
     res.send(response);
   });
-}
+};
+
+exports.joinOrganization = function(req, res) {
+  var data = req.body;
+  if (data.organization && data.user) {
+    if (req.user.id == data.user) {
+      Organization.findById(data.organization, function(err, organization) {
+        if (!err && organization) {
+          req.user.organization = organization._id;
+          req.user.updatedAt = builder.currentEpochTime();
+          req.user.save();
+          organization.users.unshift(req.user.id);
+          organization.updatedAt = builder.currentEpochTime();
+          organization.save();
+          res.send(organization);
+        } else {
+          res.send('error');
+        }
+      });
+    } else {
+      res.send('error');
+    }
+  } else {
+    res.send('error');
+  }
+};
+
+exports.postNewOrganization = function(req, res) {
+  var data = req.body;
+  if (data.displayName && data.location && data.user) {
+    if (req.user.id == data.user) {
+      var admins = data.admins ? data.admins.split(',') : [];
+      admins.push(data.user);
+      var organization = new Organization({
+        displayName: data.displayName,
+        admins: admins,
+        location: data.location
+      });
+      if (data.designation) {
+        organization.designation = data.designation;
+      }
+      if (data.memberLabel) {
+        organization.memberLabel = data.memberLabel;
+      }
+      if (data.classGrades) {
+        organization.classGrades = data.classGrades.split(',');
+      }
+      if (data.classTypes) {
+        organization.classGrades = data.classTypes.split(',');
+      }
+      if (data.security) {
+        organization.security = data.security;
+        if (data.security == 0 && data.blockedDomains) {
+          organization.blockedDomains = data.blockedDomains.split(',');
+        } else if (data.security == 1 && data.allowedDomains) {
+          organization.allowedDomains = data.allowedDomains.split(',');
+        } else if (data.security == 2 && data.allowedAddresses) {
+          organization.allowedAddresses = data.allowedAddresses.split(',');
+        }
+      }
+      organization.save(function(err) {
+        var calls = [];
+        admins.forEach(function(admin) {
+          calls.push(function(response) {
+            User.findById(admin, function(err, user) {
+              user.organization = organization.id;
+              user.isAdmin = true;
+              user.updatedAt = builder.currentEpochTime();
+              user.save();
+              response(err, user);
+            });
+          });
+        });
+        async.series(calls, function(err, resp) {
+          res.send(organization);
+        });
+      });
+    } else {
+      res.send('error');
+    }
+  } else {
+    res.send('error');
+  }
+};
 
 exports.postNewAdminHelpInstance = function(req, res) {
   var data = req.body;
@@ -160,7 +244,7 @@ exports.postNewAdminHelpInstance = function(req, res) {
   } else {
     res.send('error');
   }
-}
+};
 
 exports.postNewHelpInstance = function(req, res) {
   var data = req.body;

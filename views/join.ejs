@@ -1,0 +1,82 @@
+<% layout('layout') %>
+<script>
+  $(document).ready(function() {
+    $('#addOrgDialog').dialog({
+      modal: true,
+      autoOpen: false
+    });
+
+    $('#addOrgButton').click(function(event) {
+      $('#addOrgDialog').dialog('open');
+    });
+
+    $('#organizationSubmit').click(function(event) {
+      $.ajax({
+        url: '/api/postNewOrganization',
+        method: 'POST',
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify({
+          user: '<%= user._id %>',
+          displayName: $('#orgName').val(),
+          location: $('#orgLocation').val(),
+          designation: $('#orgDesignation').val(),
+          admins: $('#orgAdmins').val(),
+          classTypes: $('#orgClassTypes').val()
+        }),
+        success: function(data) {
+          $('#addOrgDialog').dialog('close');
+          location.reload();
+        }
+      });
+
+      event.preventDefault();
+      event.stopPropagation();
+    });
+
+    $('#organizationJoin').click(function(event) {
+      $.ajax({
+        url: '/api/joinOrganization',
+        method: 'POST',
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify({
+          user: '<%= user._id %>',
+          organization: $('#organizationSelector').val()
+        }),
+        success: function(data) {
+          location.reload();
+        }
+      });
+    });
+  });
+</script>
+Select an organization<br>
+<select id="organizationSelector">
+<% typeof organizations != 'undefined' && organizations.forEach(function(organization) { %>
+  <option value="<%= organization._id %>"><%= organization.displayName %></option>
+<% }); %>
+</select>&nbsp;&nbsp;&nbsp;<button id="addOrgButton">+</button><br>
+<br>
+<button id="organizationJoin">Join this organization</button>
+
+<div id="addOrgDialog" title="Add an organization">
+  Organization location:<br>
+  <input id="orgLocation" type="text" placeholder="Faber College"><br>
+  <br>
+  Organization name:<br>
+  <input id="orgName" type="text" placeholder="Delta Tau Chi"><br>
+  <br>
+  Chapter designation (Greek organizations only):
+  <input id="orgDesignation" type="text" placeholder="Alpha Beta"><br>
+  <br>
+  Member label:<br>
+  <input id="orgMemberLabel" type="text" value="member"><br>
+  <br>
+  Class types:<br>
+  <input id="orgClassTypes" type="text"><br>
+  <br>
+  Admins (including <%= user.email %>):<br>
+  <input id="orgAdmins" type="text"><br>
+  <br>
+  <br>
+  <a id="organizationSubmit" href="#">Create organization</a>
+</div>

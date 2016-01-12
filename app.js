@@ -13,6 +13,8 @@ var api = require('./routes/api');
 var logs = require('./routes/logs');
 var fClass = require('./routes/class');
 var admin = require('./routes/admin');
+var join = require('./routes/join');
+var organization = require('./routes/organization');
 
 var prefs = require('./helpers/prefs');
 
@@ -113,10 +115,15 @@ app.get('/logs', ensureAuthenticated, logs.get);
 
 app.get('/admin', ensureAdmin, admin.get);
 
+app.get('/join', ensureAuthenticated, join.get);
+
 app.post('/api/newClassInstance', ensureAuthenticated, api.postNewClassInstance);
 app.put('/api/updateClassInstance', ensureAuthenticated, api.updateClassInstance);
 
 app.post('/api/postNewHelpInstance', ensureAuthenticated, api.postNewHelpInstance);
+
+app.post('/api/postNewOrganization', ensureAuthenticated, api.postNewOrganization);
+app.post('/api/joinOrganization', ensureAuthenticated, api.joinOrganization);
 
 app.post('/api/postNewSemester', ensureAuthenticated, api.postNewSemester);
 
@@ -138,6 +145,8 @@ app.get('/class/new', ensureAuthenticated, fClass.new);
 
 app.get('/login', login.get);
 
+app.get('/organization', organization.get);
+
 app.get('/auth/google', passport.authenticate('google', {
   scope: ['profile', 'email']
 }));
@@ -147,7 +156,7 @@ app.get('/auth/google/callback', passport.authenticate( 'google', {
   failureRedirect: '/login'
 }));
 
-app.get('/logout', function(req, res){
+app.get('/logout', function(req, res) {
   req.logout();
   res.redirect('/');
 });

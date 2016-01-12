@@ -13,6 +13,10 @@ var semesterSchema = new mongoose.Schema({
   },
   trimester: Number,
   year: Number,
+  organization: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Organization'
+  },
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'

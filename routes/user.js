@@ -55,10 +55,14 @@ var renderUser = function(res, user, isNotUser){
 }
 
 exports.get = function(req, res) {
-  if (req.user.isAdmin) {
-    res.redirect('/admin');
+  if (req.user.organization) {
+    if (req.user.isAdmin) {
+      res.redirect('/admin');
+    } else {
+      renderUser(res, req.user, false);
+    }
   } else {
-    renderUser(res, req.user, false);
+    res.redirect('join');
   }
 };
 
