@@ -76,6 +76,11 @@ var organizationSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Semester',
     default: []
+  }],
+  semesterContainers: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SemesterContainer',
+    default: []
   }]
 });
 

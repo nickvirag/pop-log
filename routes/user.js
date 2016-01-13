@@ -26,17 +26,18 @@ var renderUser = function(res, user, isNotUser){
     prefs.getGradeOptions(user.organization, function(err, gradeOptions) {
       prefs.getCourseOptions(user.organization, function(err, courseOptions) {
         prefs.getTrimesterOptions(user.organization, function(err, trimesterOptions) {
-          res.render('user', {
-            user: user,
-            isNotUser: isNotUser,
-            gradeOptions: gradeOptions,
-            yearOptions: prefs.getYearOptions(),
-            courseOptions: courseOptions,
-            trimesterOptions: trimesterOptions,
-            currentTrimester: prefs.getCurrentTrimester(),
-            lastSunday: dateFormat(lastSunday, prefs.getDateFormat()),
-            helpInstances: helpInstances,
-            websites: prefs.getHelpWebsites()
+          prefs.getCurrentTrimester(user.organization, function(err, currentTrimester) {
+            res.render('user', {
+              user: user,
+              isNotUser: isNotUser,
+              gradeOptions: gradeOptions,
+              yearOptions: prefs.getYearOptions(),
+              courseOptions: courseOptions,
+              trimesterOptions: trimesterOptions,
+              currentTrimester: currentTrimester,
+              lastSunday: dateFormat(lastSunday, prefs.getDateFormat()),
+              helpInstances: helpInstances
+            });
           });
         });
       });

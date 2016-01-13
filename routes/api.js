@@ -9,6 +9,7 @@ mongoose.set('debug', true);
 
 var User = require('../models/user.js');
 var Semester = require('../models/semester.js');
+var SemesterContainer = require('../models/semestercontainer.js');
 var ClassInstance = require('../models/classinstance.js');
 var HelpInstance = require('../models/helpinstance.js');
 var Class = require('../models/class.js');
@@ -63,7 +64,7 @@ exports.dropClassInstance = function(req, res){
 
 exports.getSemester = function(req, res) {
   var data = req.query;
-  builder.getJSONSemester(req.user, data, function(err, response){
+  builder.getJSONSemester(req.user, data, function(err, response) {
     res.send(response);
   });
 };
@@ -185,7 +186,7 @@ exports.postNewOrganization = function(req, res) {
         organization.classGrades = data.classGrades.split(',');
       }
       if (data.classTypes) {
-        organization.classGrades = data.classTypes.split(',');
+        organization.classTypes = data.classTypes.split(',');
       }
       if (data.security) {
         organization.security = data.security;
@@ -198,20 +199,55 @@ exports.postNewOrganization = function(req, res) {
         }
       }
       organization.save(function(err) {
-        var calls = [];
-        admins.forEach(function(admin) {
-          calls.push(function(response) {
-            User.findById(admin, function(err, user) {
-              user.organization = organization.id;
-              user.isAdmin = true;
-              user.updatedAt = builder.currentEpochTime();
-              user.save();
-              response(err, user);
+        var semesterContainer = new SemesterContainer({
+          label: 'Spring',
+          startMonth: 1,
+          startDay: 11,
+          endMonth: 5,
+          endDay: 11
+        });
+        semesterContainer.organization = organization.id;
+        semesterContainer.save(function(err) {
+          organization.semesterContainers.unshift(semesterContainer);
+          semesterContainer = new SemesterContainer({
+            label: 'Summer',
+            startMonth: 5,
+            startDay: 16,
+            endMonth: 7,
+            endDay: 22
+          });
+          semesterContainer.organization = organization.id;
+          semesterContainer.save(function(err) {
+            organization.semesterContainers.unshift(semesterContainer);
+            semesterContainer = new SemesterContainer({
+              label: 'Fall',
+              startMonth: 8,
+              startDay: 24,
+              endMonth: 12,
+              endDay: 17
+            });
+            semesterContainer.organization = organization.id;
+            semesterContainer.save(function(err) {
+              organization.semesterContainers.unshift(semesterContainer);
+              organization.save(function(err) {
+                var calls = [];
+                admins.forEach(function(admin) {
+                  calls.push(function(response) {
+                    User.findById(admin, function(err, user) {
+                      user.organization = organization.id;
+                      user.isAdmin = true;
+                      user.updatedAt = builder.currentEpochTime();
+                      user.save();
+                      response(err, user);
+                    });
+                  });
+                });
+                async.series(calls, function(err, resp) {
+                  res.send(organization);
+                });
+              });
             });
           });
-        });
-        async.series(calls, function(err, resp) {
-          res.send(organization);
         });
       });
     } else {
@@ -310,28 +346,34 @@ exports.postNewHelpInstance = function(req, res) {
 
 exports.postNewSemester = function(req, res) {
   var data = req.body;
-  if (data.user && data.trimester && data.year) {
+  if (data.user && data.semesterContainer && data.year) {
     if (data.user == req.user.id) {
-      Semester.findOne({
-        user: data.user,
-        trimester: data.trimester,
-        year: data.year
-      }).exec(function(err, semester) {
-        if (!err && semester) {
-          res.send('error');
-        } else {
-          var semester = new Semester({
-            user: data.user,
-            trimester: data.trimester,
-            year: data.year
-          });
-          semester.save(function(err) {
-            req.user.semesters.unshift(semester.id);
-            req.user.updatedAt = builder.currentEpochTime();
-            req.user.save();
-            res.send(semester);
-          });
-        }
+      SemesterContainer.findById(data.semesterContainer, function(err, semesterContainer) {
+        Semester.findOne({
+          user: data.user,
+          semesterContainer: semesterContainer.id,
+          year: data.year
+        }).exec(function(err, semester) {
+          if (!err && semester) {
+            res.send('error');
+          } else {
+            var semester = new Semester({
+              user: data.user,
+              trimesterLabel: semesterContainer.label,
+              year: data.year,
+              semesterContainer: semesterContainer.id
+            });
+            semester.save(function(err) {
+              req.user.semesters.unshift(semester.id);
+              req.user.updatedAt = builder.currentEpochTime();
+              req.user.save();
+              semesterContainer.semesters.unshift(semester.id);
+              semesterContainer.updatedAt = builder.currentEpochTime();
+              semesterContainer.save();
+              res.send(semester);
+            });
+          }
+        });
       });
     } else {
       res.send('error');

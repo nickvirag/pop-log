@@ -11,8 +11,12 @@ var semesterSchema = new mongoose.Schema({
     type: Number,
     default: Date.now
   },
-  trimester: Number,
+  trimesterLabel: String,
   year: Number,
+  semesterContainer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SemesterContainer'
+  },
   organization: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Organization'

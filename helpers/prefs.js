@@ -5,6 +5,9 @@ var app = express();
 var fs = require('fs');
 
 var Organization = require('../models/organization');
+var SemesterContainer = require('../models/semestercontainer.js');
+
+var builder = require('../helpers/builder.js');
 
 var contents = fs.readFileSync('./prefs.json');
 var jsonContent = JSON.parse(contents);
@@ -22,43 +25,59 @@ exports.getCourseOptions = function(id, callback) {
 };
 
 exports.getTrimesterOptions = function(id, callback) {
-  var semesters = [];
-  jsonContent.classes.semesters.forEach(function(semester) {
-    semesters.push(semester.label);
+  Organization.findById(id, function(err, organization) {
+    builder.arrayToObjects(SemesterContainer, organization.semesterContainers, function(err, semesterContainers) {
+      var semesters = [];
+      semesterContainers.forEach(function(semesterContainer) {
+        semesters.push({
+          label: semesterContainer.label,
+          id: semesterContainer._id
+        });
+      });
+      callback(err, semesters);
+    });
   });
-  callback(null, semesters);
 };
 
 exports.getDateFormat = function() {
   return 'dddd, mmmm dS, h:MM:ss TT';
 };
 
-exports.getCurrentTrimester = function() {
-  var date = new Date();
-  var currentMonth = date.getMonth() + 1;
-  var currentDay = date.getDate() + 1;
-  var semesters = jsonContent.classes.semesters;
-  var currentSemester = -1;
-  for (var x = 0, semester = {}; x < semesters.length; x ++) {
-    semester = semesters[x];
-    if (currentMonth >= semester.startMonth && currentMonth <= semester.endMonth) {
-      if (currentMonth == semester.startMonth) {
-        if (currentDay >= semester.startDay) {
-          currentSemester = x;
-          break;
+exports.getCurrentTrimester = function(id, callback) {
+  Organization.findById(id, function(err, organization) {
+    builder.arrayToObjects(SemesterContainer, organization.semesterContainers, function(err, semesterContainers) {
+      var date = new Date();
+      var currentMonth = date.getMonth() + 1;
+      var currentDay = date.getDate() + 1;
+      var currentSemester = {};
+      var currentSemesterFound = {};
+      try {
+        semesterContainers.forEach(function(semester) {
+          if (currentMonth >= semester.startMonth && currentMonth <= semester.endMonth) {
+            if (currentMonth == semester.startMonth) {
+              if (currentDay >= semester.startDay) {
+                currentSemester = semester;
+                throw currentSemesterFound;
+              }
+            } else if (currentMonth == semester.endMonth) {
+              if (currentDay <= semester.endDay) {
+                currentSemester = semester;
+                throw currentSemesterFound;
+              }
+            } else {
+              currentSemester = semester;
+              throw currentSemesterFound;
+            }
+          }
+        });
+      } catch (e) {
+        if (e !== currentSemesterFound) {
+          throw e;
         }
-      } else if (currentMonth == semester.endMonth) {
-        if (currentDay <= semester.endDay) {
-          currentSemester = x;
-          break;
-        }
-      } else {
-        currentSemester = x;
-        break;
       }
-    }
-  }
-  return currentSemester;
+      callback(err, currentSemester);
+    });
+  });
 };
 
 exports.getCurrentYear = function () {
@@ -85,30 +104,4 @@ exports.getYearOptions = function() {
   var today = new Date();
   var year = today.getFullYear();
   return (today.getMonth() < 9) ? [year] : [year, year + 1];
-};
-
-exports.getHelpWebsites = function() {
-  return jsonContent.help.websites;
-};
-
-exports.getLabel = function() {
-  return jsonContent.label;
-};
-
-exports.getHelpWebsiteByID = function(id) {
-  var response = {};
-  var BreakException = {};
-  try {
-    jsonContent.help.websites.forEach(function(website) {
-      if (website.id == id) {
-        response = website;
-        throw BreakException;
-      }
-    });
-  } catch (e) {
-    if (e !== BreakException) {
-      throw e;
-    }
-  }
-  return response;
 };

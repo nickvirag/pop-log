@@ -74,7 +74,7 @@ exports.getJSONSemester = function(user, data, callback) {
                 var calls = [];
                 classInstances.forEach(function(classInstance) {
                   if (classInstance.isEnrolled) {
-                    calls.push(function(response){
+                    calls.push(function(response) {
                       Class.findById(classInstance.class, function(err, fClass) {
                         response(err, {
                           grade: classInstance.grade,
@@ -89,9 +89,15 @@ exports.getJSONSemester = function(user, data, callback) {
                 });
                 prefs.getTrimesterOptions(user.organization, function(err, trimesterOptions) {
                   async.series(calls, function(err, obj) {
+                    var tOption = {};
+                    trimesterOptions.forEach(function(trimesterOption) {
+                      if (semester.trimester == trimesterOption.id) {
+                        tOption = trimesterOption;
+                      }
+                    });
                     callback(err, {
-                      trimester: semester.trimester,
-                      trimesterLabel: trimesterOptions[semester.trimester],
+                      semesterContainer: semester.semesterContainer,
+                      trimesterLabel: semester.trimesterLabel,
                       year: semester.year,
                       id: semester.id,
                       classes: obj

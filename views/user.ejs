@@ -37,11 +37,6 @@
       autoOpen: false
     });
 
-    $('#logWebsiteDialog').dialog({
-      modal: true,
-      autoOpen: false
-    });
-
     $('#semesterSelector').change(function() {
       var self = this;
       $.ajax({
@@ -200,44 +195,6 @@
       $('#logHoursMasterDialog').dialog('open');
     });
 
-    $('.logWebsiteButton').click(function(event) {
-      var self = $(this);
-      $("#websiteTitle").val(self.data('title'));
-      $("#websiteURL").val(self.data('url'));
-      $("#websiteID").val(self.data('id'));
-      $("#logWebsiteClass").html('');
-      classes.forEach(function(fClass) {
-        $("#logWebsiteClass").append($("<option />").val(fClass.id).text(fClass.classCode + ' ' + fClass.classIdentifier));
-      });
-      $("#logWebsiteClass").append($("<option />").val('').text('Other'));
-      $('#logWebsiteDialog').dialog('open');
-      event.preventDefault();
-      event.stopPropagation();
-    });
-
-    $('#logWebsiteSubmit').click(function(event) {
-      $.ajax({
-        url: '/api/postNewHelpInstance',
-        method: 'POST',
-        contentType: 'application/json; charset=utf-8',
-        data: JSON.stringify({
-          helpType: '1',
-          websiteID: $('#websiteID').val(),
-          classInstance: $('#logWebsiteClass').val(),
-          user: '<%= user._id %>',
-          completedDate: Math.round(new Date().getTime() / 1000),
-          description: $('#websiteDescription').val()
-        }),
-        success: function(data) {
-          $('#logWebsiteDialog').dialog('close');
-          getLogs();
-        }
-      });
-
-      event.preventDefault();
-      event.stopPropagation();
-    });
-
     var userButtonClick = function(event) {
       var self = this;
       $.ajax({
@@ -305,7 +262,7 @@
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify({
           user: '<%= user._id %>',
-          trimester: $('#newSemesterTrimester').val(),
+          semesterContainer: $('#newSemesterTrimester').val(),
           year: $('#newSemesterYear').val()
         }),
         success: function(data) {
@@ -406,9 +363,6 @@ Hours this week: <span id="hoursLogged">0</span>
       </table><br>
       <div class="addButtonContainer">
         <button id="logHoursButton">+</button>
-        <%// websites.forEach(function(website) { %>
-        <!--&nbsp;&nbsp;&nbsp;<a class="logWebsiteButton" href="#" data-title="<%//= website.title %>" data-url="<%//= website.url %>" data-id="<%//= website.id %>">+ "<%//= website.title %>"</a> -->
-        <%// }); %>
       </div>
     </div>
   </div>
@@ -416,12 +370,12 @@ Hours this week: <span id="hoursLogged">0</span>
 
 <div id="newSemesterDialog" title="New Semester">
   <select id="newSemesterTrimester">
-  	<option value="0">Spring</option>
-  	<option value="1">Summer</option>
-  	<option value="2">Fall</option>
+    <% trimesterOptions.forEach(function(trimesterOption) { %>
+  	<option value="<%= trimesterOption.id %>"><%= trimesterOption.label %></option>
+    <% }); %>
   </select>
   <select id="newSemesterYear">
-    <% yearOptions.forEach(function(yearOption){ %>
+    <% yearOptions.forEach(function(yearOption) { %>
   	<option value="<%= yearOption %>"><%= yearOption %></option>
     <% }); %>
   </select>
@@ -464,14 +418,4 @@ Hours this week: <span id="hoursLogged">0</span>
   Number of hours: <input type="number" id="postHelpHours" value="0"><br>
   <!--Studied with: <input type="number" id="postHelpUsers" value=""><br>-->
   <a id="logHoursSubmit" href="#">Log this</a>
-</div>
-
-<div id="logWebsiteDialog" title="Log Website">
-  <select id="logWebsiteClass"></select><br>
-  <div id="logWebsiteText"></div>
-  <input type="hidden" id="websiteTitle" value="">
-  <input type="hidden" id="websiteURL" value="">
-  <input type="hidden" id="websiteID" value="">
-  Write about it: <input type="text" id="websiteDescription" value=""><br>
-  <a id="logWebsiteSubmit" href="#">Log this</a>
 </div>
