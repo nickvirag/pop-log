@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<title>shitlog</title>
-		<link href='https://fonts.googleapis.com/css?family=Questrial' rel='stylesheet' type='text/css'>
+		<link href="https://fonts.googleapis.com/css?family=Questrial" rel="stylesheet" type="text/css">
 		<style>
 			html {
 				font-family: 'Questrial', sans-serif;
@@ -85,6 +85,13 @@
 				width: 75%;
 				float: left;
 			}
+			.fabLeft {
+				width: 75%;
+			}
+			.fabRight {
+				width: 25%;
+				float: right;
+			}
 			.card {
 				width: 100%;
 				background-color: #F5F5F5;
@@ -95,6 +102,7 @@
 			}
 			.cardContents {
 				padding: 40px;
+				position: relative;
 			}
 			.cardTitle {
 				font-size: 1.5em;
@@ -106,6 +114,21 @@
 			}
 			.dialog-no-close .ui-dialog-titlebar-close {
 				display: none;
+			}
+			.floatingActionButton {
+				background-color: #F44336;
+				width: 60px;
+				height: 60px;
+				border-radius: 100%;
+				border: none;
+				outline: none;
+				color: white;
+				font-size: 36px;
+				box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+				position: absolute;
+				bottom: 0;
+				right: 0;
+				margin: 40px;
 			}
 		</style>
 		<link href="/javascripts/jquery-ui-1.11.4/jquery-ui.min.css" rel="stylesheet">

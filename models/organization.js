@@ -45,7 +45,7 @@ var organizationSchema = new mongoose.Schema({
   }],
   classGrades: [{
     type: String,
-    default: ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'D-', 'F']
+    default: []
   }],
   users: [{
     type: mongoose.Schema.Types.ObjectId,

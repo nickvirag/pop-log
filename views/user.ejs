@@ -48,17 +48,16 @@
           user: '<%= user._id %>'
         },
         success: function(data) {
+          $('#newClassSemester').val($('#semesterSelector').val());
           $('#newClassTrimester').text(data.trimesterLabel);
-          $('#newClassTrimester').data('trimester', data.trimester);
           $('#newClassYear').text(data.year);
-          $('#newClassYear').data('year', data.year);
           semesterTable.clear().draw();
           classes = data.classes;
           classes.forEach(function(fClass) {
             semesterTable.row.add([
               '<a class="gradeUserButton" id="gradeUserButton_' + fClass.id + '" data-class="' + fClass.id + '" href="#">' + fClass.classCode + ' ' + fClass.classIdentifier + '</a>',
               '<select name="grade" class="gradeSelector" id="gradeSelector_' + fClass.id + '" data-class="' + fClass.id + '">'
-              <% gradeOptions.forEach(function(gradeOption, x){ %>
+              <% gradeOptions.forEach(function(gradeOption, x) { %>
               + '<option value="<%= x %>"><%= gradeOption %></option>'
               <% }); %>
               + '</select>',
@@ -299,8 +298,7 @@
         contentType: 'application/json; charset=utf-8',
         data: JSON.stringify({
           user: '<%= user._id %>',
-          trimester: $('#newClassTrimester').data('trimester').toString(),
-          year: $('#newClassYear').data('year').toString(),
+          semester: $('#newClassSemester').val(),
           classCode: $('#newClassCode').val(),
           classIdentifier: $('#newClassIdentifier').val()
         }),
@@ -325,45 +323,45 @@ Hours this week: <span id="hoursLogged">0</span>
 <div class="mainContents">
   <div class="card">
     <div class="cardContents">
-      <div class="cardTitle">CLASSES</div>
-      <table id="semesterClasses">
-        <thead>
-          <tr>
-            <th></th>
-            <th></th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table><br>
-      <div class="addButtonContainer">
-        <button id="newClassButton">+</button>
+      <div class="fabLeft">
+        <div class="cardTitle">CLASSES</div>
+        <table id="semesterClasses">
+          <thead>
+            <tr>
+              <th></th>
+              <th></th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
+      <button id="newClassButton" class="floatingActionButton">+</button>
     </div>
   </div>
   <div class="card">
     <div class="cardContents">
-      <div class="cardTitle">LOGS THIS WEEK</div>
-      <table id="userLogsTable">
-        <thead>
-          <tr>
-            <th></th>
-            <th></th>
-            <th></th>
-            <!--<th>Due Date</th>
-            <th>Class</th>
-            <th>Type</th>
-            <th>Hours</th>
-            <th>Website</th>
-            <th>Description</th>
-            <th>Helping users</th>-->
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table><br>
-      <div class="addButtonContainer">
-        <button id="logHoursButton">+</button>
+      <div class="fabLeft">
+        <div class="cardTitle">LOGS THIS WEEK</div>
+        <table id="userLogsTable">
+          <thead>
+            <tr>
+              <th></th>
+              <th></th>
+              <th></th>
+              <!--<th>Due Date</th>
+              <th>Class</th>
+              <th>Type</th>
+              <th>Hours</th>
+              <th>Website</th>
+              <th>Description</th>
+              <th>Helping users</th>-->
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
       </div>
+      <button id="logHoursButton" class="floatingActionButton">+</button>
     </div>
   </div>
 </div>
@@ -385,13 +383,14 @@ Hours this week: <span id="hoursLogged">0</span>
 </div>
 
 <div id="newClassDialog" title="New Class">
-  <span id="newClassTrimester" data-trimester=""></span> <span id="newClassYear" data-year=""></span>
+  <span id="newClassTrimester"></span> <span id="newClassYear"></span>
   <br>
   <select id="newClassCode">
     <% courseOptions.forEach(function(courseOption){ %>
   	<option value="<%= courseOption %>"><%= courseOption %></option>
     <% }); %>
   </select>
+  <input type="hidden" id="newClassSemester">
   <input type="text" id="newClassIdentifier" placeholder="Course number">
   <input type="text" id="newClassCRN" placeholder="CRN">
   <br>

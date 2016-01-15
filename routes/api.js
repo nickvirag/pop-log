@@ -174,16 +174,14 @@ exports.postNewOrganization = function(req, res) {
       var organization = new Organization({
         displayName: data.displayName,
         admins: admins,
-        location: data.location
+        location: data.location,
+        classGrades: data.classGrades ? data.classGrades.split(',') : ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'D-', 'F']
       });
       if (data.designation) {
         organization.designation = data.designation;
       }
       if (data.memberLabel) {
         organization.memberLabel = data.memberLabel;
-      }
-      if (data.classGrades) {
-        organization.classGrades = data.classGrades.split(',');
       }
       if (data.classTypes) {
         organization.classTypes = data.classTypes.split(',');
@@ -383,77 +381,74 @@ exports.postNewSemester = function(req, res) {
   }
 }
 
-exports.postNewClassInstance = function(req, res){
+exports.postNewClassInstance = function(req, res) {
   var data = req.body;
   console.log(data);
-  console.log(data.trimester && data.year && data.classCode && data.classIdentifier && data.user);
-  if (data.trimester && data.year && data.classCode && data.classIdentifier && data.user) {
+  if (data.semester && data.classCode && data.classIdentifier && data.user) {
     if (req.user.id == data.user) {
-      var createWithSemesterAndClass = function(semester, fClass) {
-        var classInstance = new ClassInstance({
-          user: req.user.id,
-          semester: semester.id,
-          class: fClass.id
-        });
-        classInstance.save(function(err, newClassInstance){
-          semester.classInstances.unshift(classInstance.id);
-          semester.updatedAt = builder.currentEpochTime();
-          semester.save();
-          fClass.classInstances.unshift(classInstance.id);
-          fClass.updatedAt = builder.currentEpochTime();
-          fClass.save();
-          if(req.user.semesters.indexOf(semester.id) == -1) {
-            req.user.semesters.unshift(semester.id);
-          }
-          if(req.user.classes.indexOf(fClass.id) == -1) {
-            req.user.classes.unshift(fClass.id);
-          }
-          req.user.classInstances.unshift(classInstance.id);
-          req.user.updatedAt = builder.currentEpochTime();
-          req.user.save();
-          res.send(classInstance);
-        });
-      };
-      var createWithSemester = function(semester) {
-        Class.findOne({
-          classCode: data.classCode,
-          classIdentifier: data.classIdentifier
-        }).exec(function(err, fClass) {
-          if (!err && fClass) {
-            fClass.users.unshift(data.user);
-            fClass.updatedAt = builder.currentEpochTime();
-            fClass.save();
-            createWithSemesterAndClass(semester, fClass);
-          } else {
-            fClass = new Class({
-              classCode: data.classCode,
-              classIdentifier: data.classIdentifier,
-              users: [data.user]
-            });
-            fClass.save(function(err, nfClass) {
-              createWithSemesterAndClass(semester, fClass);
-            });
-          }
-        });
-      };
-      Semester.findOne({
-        user: req.user.id,
-        trimester: data.trimester,
-        year: data.year
-      }).exec(function(err, semester) {
-        if (!err && semester) {
-          createWithSemester(semester);
+      Organization.findById(req.user.organization, function(err, organization) {
+        if (!err && organization) {
+          Semester.findById(data.semester, function(err, semester) {
+            if (!err && semester) {
+              Class.findOne({
+                classCode: data.classCode,
+                classIdentifier: data.classIdentifier,
+                organization: organization.id
+              }).exec(function(err, fClass) {
+                if (!err && fClass) {
+                  fClass.users.unshift(data.user);
+                  fClass.updatedAt = builder.currentEpochTime();
+                } else {
+                  fClass = new Class({
+                    classCode: data.classCode,
+                    classIdentifier: data.classIdentifier,
+                    users: [data.user],
+                    organization: organization.id
+                  });
+                }
+                fClass.save(function(err) {
+                  if (organization.classes.indexOf(fClass.id) == -1) {
+                    organization.classes.unshift(fClass.id);
+                  }
+                  var classInstance = new ClassInstance({
+                    user: req.user.id,
+                    semester: semester.id,
+                    class: fClass.id,
+                    organization: organization.id
+                  });
+                  classInstance.save(function(err) {
+                    organization.classInstances.unshift(classInstance.id);
+                    organization.updatedAt = builder.currentEpochTime();
+                    organization.save();
+                    semester.classInstances.unshift(classInstance.id);
+                    semester.updatedAt = builder.currentEpochTime();
+                    semester.save();
+                    fClass.classInstances.unshift(classInstance.id);
+                    fClass.updatedAt = builder.currentEpochTime();
+                    fClass.save();
+                    if(req.user.semesters.indexOf(semester.id) == -1) {
+                      req.user.semesters.unshift(semester.id);
+                    }
+                    if(req.user.classes.indexOf(fClass.id) == -1) {
+                      req.user.classes.unshift(fClass.id);
+                    }
+                    req.user.classInstances.unshift(classInstance.id);
+                    req.user.updatedAt = builder.currentEpochTime();
+                    req.user.save();
+                    res.send(classInstance);
+                  });
+                });
+              });
+            } else {
+              res.send('error');
+            }
+          });
         } else {
-          semester = new Semester({
-            user: req.user.id,
-            trimester: data.trimester,
-            year: data.year
-          });
-          semester.save(function(err, sem) {
-            createWithSemester(semester);
-          });
+          res.send('error');
         }
       });
+    } else {
+      res.send('error');
     }
   } else {
     res.send('error');
