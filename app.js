@@ -10,6 +10,7 @@ var semesters = require('./routes/semesters');
 var userRoute = require('./routes/user');
 var login = require('./routes/login');
 var api = require('./routes/api');
+var settings = require('./routes/settings');
 var logs = require('./routes/logs');
 var fClass = require('./routes/class');
 var admin = require('./routes/admin');
@@ -113,21 +114,25 @@ app.get('/admin', ensureAdmin, admin.get);
 
 app.get('/join', ensureAuthenticated, join.get);
 
+app.get('/settings', ensureAuthenticated, settings.get);
+
 app.post('/api/newClassInstance', ensureAuthenticated, api.postNewClassInstance);
 app.put('/api/updateClassInstance', ensureAuthenticated, api.updateClassInstance);
 
 app.post('/api/postNewHelpInstance', ensureAuthenticated, api.postNewHelpInstance);
 
-app.post('/api/postNewOrganization', ensureAuthenticated, api.postNewOrganization);
-app.post('/api/joinOrganization', ensureAuthenticated, api.joinOrganization);
+app.post('/api/postNewOrganization', ensureAuthenticatedAndUser, api.postNewOrganization);
+app.post('/api/joinOrganization', ensureAuthenticatedAndUser, api.joinOrganization);
 
-app.post('/api/postNewSemester', ensureAuthenticated, api.postNewSemester);
+app.post('/api/postNewSemester', ensureAuthenticatedAndUser, api.postNewSemester);
 
-app.get('/api/getClassHelp', ensureAuthenticated, api.getClassHelp);
+app.put('/api/updateSettings', ensureAdmin, api.updateSettings);
+
+app.get('/api/getClassHelp', ensureAuthenticatedAndUser, api.getClassHelp);
 
 app.get('/api/getSemester', ensureAuthenticated, api.getSemester);
 
-app.get('/api/getSemesters', ensureAuthenticated, api.getSemesters);
+app.get('/api/getSemesters', ensureAuthenticatedAndUser, api.getSemesters);
 
 app.get('/api/getLogs', ensureAuthenticated, api.getLogs);
 
@@ -159,6 +164,13 @@ app.get('/logout', function(req, res) {
 
 function ensureAuthenticated(req, res, next) {
   if (req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/login');
+}
+
+function ensureAuthenticatedAndUser(req, res, next) {
+  if (req.isAuthenticated() && (req.query.user == req.user.id || req.body.user == req.user.id)) {
     return next();
   }
   res.redirect('/login');

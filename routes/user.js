@@ -18,8 +18,8 @@ var HelpInstance = require('../models/helpinstance.js');
 var ClassInstance = require('../models/classinstance.js');
 var Class = require('../models/class.js');
 
-var renderUser = function(res, user, isNotUser){
-  builder.arrayToObjects(HelpInstance, user.helpInstances, function(err, helpInstances){
+var renderUser = function(res, user, isNotUser) {
+  builder.arrayToObjects(HelpInstance, user.helpInstances, function(err, helpInstances) {
     var lastSunday = new Date();
     lastSunday.setDate(lastSunday.getDate() - lastSunday.getDay());
     lastSunday.setHours(0, 0, 0, 0);
@@ -57,7 +57,7 @@ exports.get = function(req, res) {
   }
 };
 
-exports.getById = function(req, res){
+exports.getById = function(req, res) {
   if (req.params[0] == req.user._id) {
     renderUser(res, req.user, false);
   } else if (req.user.isAdmin) {

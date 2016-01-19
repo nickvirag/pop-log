@@ -11,6 +11,14 @@ var organizationSchema = new mongoose.Schema({
   },
   location: String,
   displayName: String,
+  emailUsername: {
+    type: String,
+    default: ''
+  },
+  emailPassword: {
+    type: String,
+    default: ''
+  },
   designation: {
     type: String,
     default: ''

@@ -1,0 +1,37 @@
+<% layout('layout') %>
+<script>
+  $(document).ready(function() {
+    $('#organizationSubmit').click(function() {
+      $.ajax({
+        url: '/api/updateSettings',
+        method: 'PUT',
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify({
+          user: '<%= user._id %>',
+          emailUsername: $('#emailUsername').val(),
+          emailPassword: $('#emailPassword').val()
+        }),
+        success: function(data) {
+          alert('Organization updated!');
+        }
+      });
+    });
+  });
+</script>
+<div class="card">
+  <div class="cardContents">
+    <% if (user.isAdmin) { %>
+    <div class="cardTitle">ORGANIZATION EMAIL</div>
+    <input id="emailUsername" type="text" value="<%= organization.emailUsername %>"><br>
+    <br>
+    <br>
+    <div class="cardTitle">ORGANIZATION EMAIL PASSWORD</div>
+    <input id="emailPassword" type="text" value="<%= organization.emailPassword %>"><br>
+    <br>
+    <br>
+    <button id="organizationSubmit">Submit</button>
+    <% } else { %>
+    Coming soon!
+    <% } %>
+  </div>
+</div>
