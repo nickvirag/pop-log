@@ -100,7 +100,9 @@ app.use(session({
 app.use( passport.initialize());
 app.use( passport.session());
 
-app.get('/', index.get);
+app.get('/', index.get).listen(app.get('port'), function() {
+  console.log('App is running and server is listening on port ', app.get('port'));
+});
 
 app.get('/user/*', ensureAuthenticated, userRoute.getById);
 app.get('/user', ensureAuthenticated, userRoute.get);
