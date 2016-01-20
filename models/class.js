@@ -11,6 +11,10 @@ var classSchema = new mongoose.Schema({
   },
   classCode: String,
   classIdentifier: Number,
+  classCredits: {
+    type: Number,
+    default: 0
+  },
   displayName: {
     type: String,
     default: ''

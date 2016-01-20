@@ -36,15 +36,19 @@ table {
 }
 #banner a:link {
   color: white;
+  text-decoration: none;
 }
 #banner a:visited {
   color: white;
+  text-decoration: none;
 }
 #banner a:hover {
   color: white;
+  text-decoration: none;
 }
 #banner a:active {
   color: white;
+  text-decoration: none;
 }
 #nav {
 }

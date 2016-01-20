@@ -291,7 +291,8 @@
           user: '<%= user._id %>',
           semester: $('#newClassSemester').val(),
           classCode: $('#newClassCode').val(),
-          classIdentifier: $('#newClassIdentifier').val()
+          classIdentifier: $('#newClassIdentifier').val(),
+          classCredits: $('#newClassCredits').val()
         }),
         success: function(data) {
           $('#semesterSelector').change();
@@ -306,7 +307,8 @@
 <div class="details">
 <select name="semester" id="semesterSelector"></select>&nbsp;&nbsp;&nbsp;<button id="newSemesterButton">+</button><br>
 <br>
-<%= isNotUser ? user.displayName + '\'s ' : '' %>GPA: <%= user.reportedGPA %><br>
+<%= isNotUser ? user.displayName.toUpperCase() + '\'S ' : '' %>OFFICIAL GPA: <%= user.reportedGPA %><br>
+<%= isNotUser ? user.displayName.toUpperCase() + '\'S ' : '' %>SEMESTER GPA: 0<br>
 HOURS THIS WEEK: <span id="hoursLogged">0</span>
 </div>
 <div class="mainContents">
@@ -381,6 +383,15 @@ HOURS THIS WEEK: <span id="hoursLogged">0</span>
   <input type="hidden" id="newClassSemester">
   <input type="text" id="newClassIdentifier" placeholder="Course number">
   <input type="text" id="newClassCRN" placeholder="CRN"><br>
+  CREDITS: <select id="newClassCredits">
+    <option value="0">0</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+  </select><br>
   <br>
   <button id="newClassSubmit">SUBMIT</button>
 </div>

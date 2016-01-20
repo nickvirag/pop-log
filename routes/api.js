@@ -164,6 +164,11 @@ exports.joinOrganization = function(req, res) {
         req.user.updatedAt = builder.currentEpochTime();
         req.user.save();
         organization.users.unshift(req.user.id);
+        var index = organization.invitedUsers.indexOf(req.user.email);
+        if (index != -1) {
+          organization.invitedUsers.splice(index, 1);
+          organization.invitedUserStatuses.splice(index, 1);
+        }
         organization.updatedAt = builder.currentEpochTime();
         organization.save();
         res.send(organization);
@@ -386,7 +391,7 @@ exports.postNewSemester = function(req, res) {
 
 exports.postNewClassInstance = function(req, res) {
   var data = req.body;
-  if (data.semester && data.classCode && data.classIdentifier) {
+  if (data.semester && data.classCode && data.classIdentifier && data.classCredits) {
     Organization.findById(req.user.organization, function(err, organization) {
       if (!err && organization) {
         Semester.findById(data.semester, function(err, semester) {
@@ -394,7 +399,8 @@ exports.postNewClassInstance = function(req, res) {
             Class.findOne({
               classCode: data.classCode,
               classIdentifier: data.classIdentifier,
-              organization: organization.id
+              organization: organization.id,
+              classCredits: data.classCredits
             }).exec(function(err, fClass) {
               if (!err && fClass) {
                 fClass.users.unshift(data.user);
@@ -404,7 +410,8 @@ exports.postNewClassInstance = function(req, res) {
                   classCode: data.classCode,
                   classIdentifier: data.classIdentifier,
                   users: [data.user],
-                  organization: organization.id
+                  organization: organization.id,
+                  classCredits: data.classCredits
                 });
               }
               fClass.save(function(err) {
