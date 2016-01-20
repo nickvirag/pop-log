@@ -130,6 +130,10 @@ app.put('/api/updateSettings', ensureAdmin, api.updateSettings);
 
 app.get('/api/getClassHelp', ensureAuthenticatedAndUser, api.getClassHelp);
 
+app.get('/api/getInvitedUsers', ensureAuthenticatedAndUserAndAdmin, api.getInvitedUsers);
+
+app.post('/api/inviteUsers', ensureAuthenticatedAndUserAndAdmin, api.inviteUsers);
+
 app.get('/api/getSemester', ensureAuthenticated, api.getSemester);
 
 app.get('/api/getSemesters', ensureAuthenticatedAndUser, api.getSemesters);
@@ -171,6 +175,13 @@ function ensureAuthenticated(req, res, next) {
 
 function ensureAuthenticatedAndUser(req, res, next) {
   if (req.isAuthenticated() && (req.query.user == req.user.id || req.body.user == req.user.id)) {
+    return next();
+  }
+  res.redirect('/login');
+}
+
+function ensureAuthenticatedAndUserAndAdmin(req, res, next) {
+  if (req.isAuthenticated() && req.user.isAdmin && (req.query.user == req.user.id || req.body.user == req.user.id)) {
     return next();
   }
   res.redirect('/login');

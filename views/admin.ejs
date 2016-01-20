@@ -1,19 +1,109 @@
 <% layout('layout') -%>
+<script>
+  $(document).ready(function() {
+    var activeUsersTable = $('#activeUsersTable').DataTable({
+      bPaginate: false,
+      bFilter: false,
+      bInfo: false
+    });
+
+    var invitedUsersTable = $('#invitedUsersTable').DataTable({
+      bPaginate: false,
+      bFilter: false,
+      bInfo: false
+    });
+
+    $('#addUserDialog').dialog({
+      modal: true,
+      autoOpen: false
+    });
+
+    $('#addUsersButton').click(function() {
+      $('#addUserDialog').dialog('open');
+    });
+
+    $('#addUserSubmit').click(function() {
+      $.ajax({
+        url: '/api/inviteUsers',
+        method: 'POST',
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify({
+          user: '<%= user._id %>',
+          organization: '<%= user.organization %>',
+          users: $('#orgUsers').val(),
+          sendInvites: 'false'
+        }),
+        success: function(data) {
+          $('#addUserDialog').dialog('close');
+          getInvitedUsers();
+        }
+      });
+    });
+
+    var getInvitedUsers = function() {
+      $.ajax({
+        url: '/api/getInvitedUsers',
+        method: 'GET',
+        contentType: 'application/json; charset=utf-8',
+        data: {
+          user: '<%= user._id %>',
+          organization: '<%= user.organization %>'
+        },
+        success: function(data) {
+          invitedUsersTable.clear();
+          data.forEach(function(invitedUser) {
+            invitedUsersTable.row.add([
+              invitedUser.email,
+              invitedUser.status
+            ]).draw( false );
+          });
+        }
+      });
+    };
+
+    getInvitedUsers();
+  });
+</script>
+
 <div class="card">
   <div class="cardContents">
     <div class="cardTitle">ACTIVE USERS</div>
-    <table>
+    <table id="activeUsersTable">
       <thead>
         <tr>
-          <th>User</th>
-          <th>Status</th>
+          <th>USER</th>
+          <th>STATUS</th>
           <th>GPA</th>
-          <th>Grades</th>
-          <th>Hours</th>
+          <th>GRADES</th>
+          <th>HOURS</th>
         </tr>
       </thead>
       <tbody>
       </tbody>
     </table>
   </div>
+</div>
+
+<div class="card">
+  <div class="cardContents">
+    <div class="cardTitle">INVITED USERS</div>
+    <table id="invitedUsersTable">
+      <thead>
+        <tr>
+          <th>EMAIL</th>
+          <th>STATUS</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+    <button id="addUsersButton" class="floatingActionButton">+</button>
+  </div>
+</div>
+
+<div id="addUserDialog" title="INVITE USERS">
+  USERS<br>
+  <input id="orgUsers" type="text"><br>
+  <br>
+  <button id="addUserSubmit">OK</button>
 </div>

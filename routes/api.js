@@ -386,7 +386,6 @@ exports.postNewSemester = function(req, res) {
 
 exports.postNewClassInstance = function(req, res) {
   var data = req.body;
-  console.log(data);
   if (data.semester && data.classCode && data.classIdentifier) {
     Organization.findById(req.user.organization, function(err, organization) {
       if (!err && organization) {
@@ -451,6 +450,64 @@ exports.postNewClassInstance = function(req, res) {
     });
   } else {
     res.send('error');
+  }
+};
+
+exports.getInvitedUsers = function(req, res) {
+  var data = req.query;
+  if (data.organization) {
+    if (data.organization == req.user.organization) {
+      Organization.findById(data.organization, function(err, organization) {
+        if (!err && organization) {
+          var inviteUsers = [];
+          organization.invitedUsers.forEach(function(inviteUser, index) {
+            inviteUsers.unshift({
+              email: inviteUser,
+              status: organization.invitedUserStatuses[index]
+            });
+          });
+          res.send(inviteUsers);
+        } else {
+          res.send('error');
+        }
+      });
+    } else {
+      res.send('error');
+    }
+  } else {
+    res.send('error');
+  }
+}
+
+exports.inviteUsers = function(req, res) {
+  var data = req.body;
+  if (data.users && data.organization && data.sendInvites) {
+    if (req.user.organization == data.organization) {
+      Organization.findById(data.organization, function(err, organization) {
+        if (!err && organization) {
+          var users = data.users.split(',');
+          var addUsers = [];
+          var addInviteStatus = [];
+          var sendInvites = data.sendInvites == 'true';
+          users.forEach(function(user) {
+            if (organization.invitedUsers.indexOf(user) == -1) {
+              organization.invitedUsers.unshift(user);
+              organization.invitedUserStatuses.unshift(sendInvites);
+            }
+          });
+          organization.updatedAt = builder.currentEpochTime();
+          organization.save(function(err) {
+            res.send(organization);
+          });
+        } else {
+          res.send('organization find error');
+        }
+      });
+    } else {
+      res.send('organization match error');
+    }
+  } else {
+    res.send('params error');
   }
 };
 

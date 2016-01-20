@@ -38,7 +38,6 @@
     });
 
     $('#semesterSelector').change(function() {
-      var self = this;
       $.ajax({
         url: '/api/getSemester',
         method: 'GET',
@@ -73,7 +72,6 @@
     });
 
     var getLogs = function() {
-      var self = this;
       $.ajax({
         url: '/api/getLogs',
         method: 'GET',
@@ -162,7 +160,7 @@
     $('#newClassIdentifier').keydown(fourDigitNumberInput);
     $('#newClassCRN').keydown(fourDigitNumberInput);
 
-    $('#logHoursSubmit').click(function(event) {
+    $('#logHoursSubmit').click(function() {
       $.ajax({
         url: '/api/postNewHelpInstance',
         method: 'POST',
@@ -180,9 +178,6 @@
           $('#logHoursMasterDialog').dialog('close');
         }
       });
-
-      event.preventDefault();
-      event.stopPropagation();
     });
 
     $('#logHoursButton').click(function(event) {
@@ -254,7 +249,7 @@
       $('#newSemesterDialog').dialog('open');
     });
 
-    $('#newSemesterSubmit').click(function(event) {
+    $('#newSemesterSubmit').click(function() {
       $.ajax({
         url: '/api/postNewSemester',
         method: 'POST',
@@ -270,11 +265,9 @@
           $('#newSemesterDialog').dialog('close');
         }
       });
-      event.preventDefault();
-      event.stopPropagation();
     });
 
-    $('#dropClassSubmit').click(function(event) {
+    $('#dropClassSubmit').click(function() {
       $.ajax({
         url: '/api/dropClassInstance',
         method: 'POST',
@@ -287,11 +280,9 @@
           $('#dropClassDialog').dialog('close');
         }
       });
-      event.preventDefault();
-      event.stopPropagation();
     });
 
-    $('#newClassSubmit').click(function(event) {
+    $('#newClassSubmit').click(function() {
       $.ajax({
         url: '/api/newClassInstance',
         method: 'POST',
@@ -307,8 +298,6 @@
           $('#newClassDialog').dialog('close');
         }
       });
-      event.preventDefault();
-      event.stopPropagation();
     });
     getSemesters('', '');
     getLogs();
@@ -318,7 +307,7 @@
 <select name="semester" id="semesterSelector"></select>&nbsp;&nbsp;&nbsp;<button id="newSemesterButton">+</button><br>
 <br>
 <%= isNotUser ? user.displayName + '\'s ' : '' %>GPA: <%= user.reportedGPA %><br>
-Hours this week: <span id="hoursLogged">0</span>
+HOURS THIS WEEK: <span id="hoursLogged">0</span>
 </div>
 <div class="mainContents">
   <div class="card">
@@ -366,7 +355,7 @@ Hours this week: <span id="hoursLogged">0</span>
   </div>
 </div>
 
-<div id="newSemesterDialog" title="New Semester">
+<div id="newSemesterDialog" title="NEW SEMESTER">
   <select id="newSemesterTrimester">
     <% trimesterOptions.forEach(function(trimesterOption) { %>
   	<option value="<%= trimesterOption.id %>"><%= trimesterOption.label %></option>
@@ -376,45 +365,45 @@ Hours this week: <span id="hoursLogged">0</span>
     <% yearOptions.forEach(function(yearOption) { %>
   	<option value="<%= yearOption %>"><%= yearOption %></option>
     <% }); %>
-  </select>
+  </select><br>
   <br>
-  <br>
-  <a id="newSemesterSubmit" href="#">Register for this semester</a>
+  <button id="newSemesterSubmit">SUBMIT</button>
 </div>
 
-<div id="newClassDialog" title="New Class">
+<div id="newClassDialog" title="NEW CLASS">
   <span id="newClassTrimester"></span> <span id="newClassYear"></span>
   <br>
   <select id="newClassCode">
-    <% courseOptions.forEach(function(courseOption){ %>
+    <% courseOptions.forEach(function(courseOption) { %>
   	<option value="<%= courseOption %>"><%= courseOption %></option>
     <% }); %>
   </select>
   <input type="hidden" id="newClassSemester">
   <input type="text" id="newClassIdentifier" placeholder="Course number">
-  <input type="text" id="newClassCRN" placeholder="CRN">
+  <input type="text" id="newClassCRN" placeholder="CRN"><br>
   <br>
-  <br>
-  <a id="newClassSubmit" href="#">New class</a>
+  <button id="newClassSubmit">SUBMIT</button>
 </div>
 
-<div id="userClassDialog" title="Help">
-  Users:<br>
+<div id="userClassDialog" title="HELP">
+  USERS<br>
   <div id="helpClassUsers"></div>
 </div>
 
-<div id="dropClassDialog" title="Drop Class">
+<div id="dropClassDialog" title="DROP CLASS">
   <input type="hidden" id="dropClassID" value="">
-  Enter reason for dropping class:<br>
+  ENTER REASON FOR DROPPING CLASS<br>
   <input type="text" id="dropClassExcuse"><br>
-  <a id="dropClassSubmit" href="#">Drop class</a>
+  <br>
+  <button id="dropClassSubmit">SUBMIT</button>
 </div>
 
-<div id="logHoursMasterDialog" title="Log Hours">
+<div id="logHoursMasterDialog" title="LOG HOURS">
   <select id="logHoursClass"></select><br>
   <div id="logHoursText"></div>
   Write about it: <input type="text" id="hoursDescription" value=""><br>
   Number of hours: <input type="number" id="postHelpHours" value="0"><br>
+  <br>
   <!--Studied with: <input type="number" id="postHelpUsers" value=""><br>-->
-  <a id="logHoursSubmit" href="#">Log this</a>
+  <button id="logHoursSubmit">SUBMIT</button>
 </div>

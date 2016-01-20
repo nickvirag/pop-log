@@ -23,11 +23,19 @@ exports.get = function(req, res) {
   if (req.user.organization) {
     res.redirect('/user');
   } else {
-    Organization.find(function(err, organizations) {
-      res.render('join', {
-        user: req.user,
-        organizations: organizations
-      });
+    Organization.find({}, function(err, organizations) {
+      if (!err && organizations) {
+        var invitedOrgs = [];
+        organizations.forEach(function(organization) {
+          if (organization.invitedUsers.indexOf(req.user.email) != -1) {
+            invitedOrgs.unshift(organization);
+          }
+        });
+        res.render('join', {
+          user: req.user,
+          organizations: invitedOrgs
+        });
+      }
     });
   }
 };

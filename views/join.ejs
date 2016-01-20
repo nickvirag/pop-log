@@ -8,6 +8,9 @@
 
     $('#addOrgButton').click(function(event) {
       $('#addOrgDialog').dialog('open');
+
+      event.preventDefault();
+      event.stopPropagation();
     });
 
     $('#organizationSubmit').click(function(event) {
@@ -49,14 +52,21 @@
     });
   });
 </script>
-Select an organization<br>
-<select id="organizationSelector">
-<% typeof organizations != 'undefined' && organizations.forEach(function(organization) { %>
-  <option value="<%= organization._id %>"><%= organization.displayName %></option>
-<% }); %>
-</select>&nbsp;&nbsp;&nbsp;<button id="addOrgButton">+</button><br>
-<br>
-<button id="organizationJoin">Join this organization</button>
+
+<div class="card">
+  <div class="cardContents">
+    <div class="cardTitle">HELLO <%= user.displayName.toUpperCase() %>!</div>
+    <select id="organizationSelector">
+    <% typeof organizations != 'undefined' && organizations.forEach(function(organization) { %>
+      <option value="<%= organization._id %>"><%= organization.displayName %></option>
+    <% }); %>
+  </select>&nbsp;&nbsp;&nbsp;<button id="organizationJoin">REGISTER</button><br>
+  </div>
+</div>
+
+<div style="width: 100%; text-align: center;">
+  <a id="addOrgButton" href="#" style="font-size: 0.5em; color: grey;">Create an organization</a>
+</div>
 
 <div id="addOrgDialog" title="Add an organization">
   Organization location:<br>

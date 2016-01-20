@@ -20,7 +20,7 @@
 						<% if (!user) { %>
 						<a href="/">Home</a>&nbsp;&nbsp;&nbsp;<a href="/auth/google">Log In</a>
 						<% } else { %>
-						<a href="/user"><%= user.displayName %></a>&nbsp;&nbsp;&nbsp;<a href="/library">Library</a>&nbsp;&nbsp;&nbsp;<a href="/settings">Settings</a>&nbsp;&nbsp;&nbsp;<a href="/logout">Log Out</a>
+						<a href="/user"><%= user.isAdmin ? 'Admin (' + user.email + ')' : user.displayName %></a>&nbsp;&nbsp;&nbsp;<a href="/library">Library</a>&nbsp;&nbsp;&nbsp;<a href="/settings">Settings</a>&nbsp;&nbsp;&nbsp;<a href="/logout">Log Out</a>
 						<% } %>
 					</span>
 				</div>

@@ -55,6 +55,14 @@ var organizationSchema = new mongoose.Schema({
     type: String,
     default: []
   }],
+  invitedUsers: [{
+    type: String,
+    default: []
+  }],
+  invitedUserStatuses: [{
+    type: Boolean,
+    default: []
+  }],
   users: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
