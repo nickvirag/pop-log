@@ -91,6 +91,10 @@ exports.getGoogleClientSecret = function() {
   return process.env.GOOGLE_CLIENT_SECRET;
 };
 
+exports.getWebURL = function() {
+  return process.env.WEB_URL;
+}
+
 exports.getYearOptions = function() {
   var today = new Date();
   var year = today.getFullYear();
