@@ -2,15 +2,10 @@ var express = require('express');
 var router = express.Router();
 var app = express();
 
-var fs = require('fs');
-
 var Organization = require('../models/organization');
 var SemesterContainer = require('../models/semestercontainer.js');
 
 var builder = require('../helpers/builder.js');
-
-var contents = fs.readFileSync('./prefs.json');
-var jsonContent = JSON.parse(contents);
 
 exports.getGradeOptions = function(id, callback) {
   Organization.findById(id, function(err, organization) {
@@ -85,19 +80,15 @@ exports.getCurrentYear = function () {
 };
 
 exports.getDatabaseURI = function() {
-  return jsonContent.database.uri;
+  return process.env.DATABASE_URI;
 };
 
 exports.getGoogleClientID = function() {
-  return jsonContent.auth.google.client_id;
+  return process.env.GOOGLE_CLIENT_ID;
 };
 
 exports.getGoogleClientSecret = function() {
-  return jsonContent.auth.google.client_secret;
-};
-
-exports.getDatabaseURI = function() {
-  return jsonContent.database.uri;
+  return process.env.GOOGLE_CLIENT_SECRET;
 };
 
 exports.getYearOptions = function() {

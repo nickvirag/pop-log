@@ -14,6 +14,13 @@ Install node modules
 npm install
 ```
 
+Set environment variables
+```sh
+export GOOGLE_CLIENT_ID="my_client_id"
+export GOOGLE_CLIENT_SECRET="my_client_secret"
+export DATABASE_URI="my_mongodb_database_uri"
+```
+
 Start server
 ```sh
 npm start
