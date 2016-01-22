@@ -87,13 +87,6 @@
               helpInstance.day,
               helpInstance.class,
               helpInstance.description
-              // new Date(helpInstance.dueDate * 1000),
-              // helpInstance.classInstance,
-              // helpInstance.helpType,
-              // helpInstance.hours,
-              // helpInstance.websiteID,
-              // helpInstance.description,
-              // helpInstance.helpingUsers
             ]).draw( false );
             hoursLogged += helpInstance.hours;
           });
@@ -307,8 +300,8 @@
 <div class="details">
 <select name="semester" id="semesterSelector"></select>&nbsp;&nbsp;&nbsp;<button id="newSemesterButton">+</button><br>
 <br>
-<%= isNotUser ? user.displayName.toUpperCase() + '\'S ' : '' %>OFFICIAL GPA: <%= user.reportedGPA %><br>
-<%= isNotUser ? user.displayName.toUpperCase() + '\'S ' : '' %>SEMESTER GPA: 0<br>
+<%= isNotUser ? user.displayName.toUpperCase() + '\'S ' : '' %>OFFICIAL GPA: ---<br>
+<%= isNotUser ? user.displayName.toUpperCase() + '\'S ' : '' %>SEMESTER GPA: ---<br>
 HOURS THIS WEEK: <span id="hoursLogged">0</span>
 </div>
 <div class="mainContents">

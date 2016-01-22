@@ -79,6 +79,12 @@ exports.getCurrentYear = function () {
   return new Date().getYear();
 };
 
+exports.broadcastEmailVerified = function(organizationId, response) {
+  Organization.findById(organizationId, function(err, organization) {
+    response(err, organization.emailUsername != '' && organization.emailPassword != '');
+  });
+}
+
 exports.getDatabaseURI = function() {
   return process.env.DATABASE_URI;
 };
@@ -93,7 +99,11 @@ exports.getGoogleClientSecret = function() {
 
 exports.getWebURL = function() {
   return process.env.WEB_URL;
-}
+};
+
+exports.getSiteTitle = function() {
+  return process.env.WEB_TITLE || '💩log';
+};
 
 exports.getYearOptions = function() {
   var today = new Date();

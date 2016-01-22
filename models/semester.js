@@ -1,6 +1,4 @@
-var ClassInstance = require('./classinstance.js');
 var mongoose = require('mongoose');
-var async = require('async');
 
 var semesterSchema = new mongoose.Schema({
   createdAt: {
@@ -13,6 +11,10 @@ var semesterSchema = new mongoose.Schema({
   },
   trimesterLabel: String,
   year: Number,
+  reportedGPA: {
+    type: Number,
+    default: 0.00
+  },
   semesterContainer: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'SemesterContainer'
@@ -28,6 +30,11 @@ var semesterSchema = new mongoose.Schema({
   classInstances: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Semester',
+    default: []
+  }],
+  reports: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Report',
     default: []
   }]
 });

@@ -4,6 +4,8 @@ var router = express.Router();
 
 var app = express();
 
+var prefs = require('../helpers/prefs');
+
 var mongoose = require('mongoose');
 mongoose.set('debug', true);
 

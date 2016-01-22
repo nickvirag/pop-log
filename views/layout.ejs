@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<title>shitlog</title>
+		<title><%= process.env.WEB_TITLE || '💩log' %></title>
 		<link href="https://fonts.googleapis.com/css?family=Questrial" rel="stylesheet" type="text/css">
 		<link href="/stylesheets/style.css" rel="stylesheet">
 		<link href="/javascripts/jquery-ui-1.11.4/jquery-ui.min.css" rel="stylesheet">
@@ -13,9 +13,7 @@
 		<div id="banner">
 			<div id="bannerContents">
 				<div id="bannerNestedContents">
-					<span id="bannerTitle">
-						💩log
-					</span>
+					<span id="bannerTitle"><%= process.env.WEB_TITLE || '💩log' %></span>
 					<span id="nav">
 						<% if (!user) { %>
 						<a href="/">HOME</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="/auth/google">SIGN IN</a>

@@ -39,6 +39,10 @@ var organizationSchema = new mongoose.Schema({
     type: String,
     default: []
   }],
+  reportFields: [{
+    type: String,
+    default: []
+  }],
   memberLabel: {
     type: String,
     default: 'member'

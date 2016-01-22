@@ -10,6 +10,7 @@ var semesters = require('./routes/semesters');
 var userRoute = require('./routes/user');
 var login = require('./routes/login');
 var api = require('./routes/api');
+var library = require('./routes/library');
 var settings = require('./routes/settings');
 var logs = require('./routes/logs');
 var fClass = require('./routes/class');
@@ -118,6 +119,8 @@ app.get('/join', ensureAuthenticated, join.get);
 
 app.get('/settings', ensureAuthenticated, settings.get);
 
+app.get('/library', ensureAuthenticated, library.get);
+
 app.post('/api/newClassInstance', ensureAuthenticated, api.postNewClassInstance);
 app.put('/api/updateClassInstance', ensureAuthenticated, api.updateClassInstance);
 
@@ -135,6 +138,10 @@ app.get('/api/getClassHelp', ensureAuthenticatedAndUser, api.getClassHelp);
 app.get('/api/getInvitedUsers', ensureAuthenticatedAndUserAndAdmin, api.getInvitedUsers);
 
 app.post('/api/inviteUsers', ensureAuthenticatedAndUserAndAdmin, api.inviteUsers);
+
+app.post('/api/sendTestMail', ensureAuthenticatedAndUserAndAdmin, api.sendTestMail);
+
+app.get('/api/getActiveUsers', ensureAuthenticatedAndUserAndAdmin, api.getActiveUsers);
 
 app.get('/api/getSemester', ensureAuthenticated, api.getSemester);
 

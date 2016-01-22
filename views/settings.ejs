@@ -16,22 +16,41 @@
         }
       });
     });
+
+    $('#sendTestMail').click(function() {
+      $.ajax({
+        url: '/api/sendTestMail',
+        method: 'POST',
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify({
+          user: '<%= user._id %>',
+          organization: '<%= user.organization %>'
+        }),
+        success: function(data) {
+          alert('Test email sent!');
+        }
+      });
+    });
   });
 </script>
 <div class="card">
   <div class="cardContents">
+    <div class="cardTitle">SETTINGS</div>
     <% if (user.isAdmin) { %>
-    <div class="cardTitle">ORGANIZATION EMAIL</div>
+    ORGANIZATION EMAIL<br>
     <input id="emailUsername" type="text" value="<%= organization.emailUsername %>"><br>
     <br>
     <br>
-    <div class="cardTitle">ORGANIZATION EMAIL PASSWORD</div>
+    ORGANIZATION EMAIL PASSWORD<br>
     <input id="emailPassword" type="password" value="<%= organization.emailPassword %>"><br>
     <br>
     <br>
-    <button id="organizationSubmit">Submit</button>
+    <a href="https://www.google.com/settings/security/lesssecureapps" target="_blank">Enable emailing on gmail</a>
+    <br>
+    <br>
+    <button id="organizationSubmit">Submit</button> <button id="sendTestMail">Send test email to <%= user.email %></button>
     <% } else { %>
-    Coming soon!
+    COMING SOON
     <% } %>
   </div>
 </div>

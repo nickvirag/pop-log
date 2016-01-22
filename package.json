@@ -20,6 +20,7 @@
     "passport-google-oauth2": ">= 0.0.0",
     "mongoose": "*",
     "async": "*",
-    "dateformat": "*"
+    "dateformat": "*",
+    "nodemailer": "~0.7.1"
   }
 }

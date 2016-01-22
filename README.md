@@ -1,6 +1,6 @@
-# shitlog
+# 💩log
 
-shitlog is a shitty Node.JS grade and hour tracking webapp with support for multiple organizations and email invites.
+💩log is a 💩ty Node.JS grade and hour tracking webapp with support for multiple organizations and email invites.
 
 ### Installation
 
@@ -25,4 +25,10 @@ export WEB_URL="http://my_web_url:3000"
 Start server
 ```sh
 npm start
+```
+
+### Settings
+Change global website title
+```sh
+export WEB_TITLE="My New Title"
 ```

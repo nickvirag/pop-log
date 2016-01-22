@@ -17,6 +17,7 @@ var Organization = require('../models/organization.js');
 
 var builder = require('../helpers/builder');
 var prefs = require('../helpers/prefs');
+var broadcast = require('../helpers/broadcast');
 var dateFormat = require('dateformat');
 var async = require('async');
 
@@ -60,7 +61,7 @@ exports.dropClassInstance = function(req, res){
       }
     });
   }
-}
+};
 
 exports.getSemester = function(req, res) {
   var data = req.query;
@@ -87,7 +88,7 @@ exports.getSemesters = function(req, res) {
   async.series(calls, function(err, obj) {
     res.send(obj.sort(builder.sort_by('year', false, parseInt)).sort(builder.sort_by('trimester', false, parseInt)));
   });
-}
+};
 
 exports.updateSettings = function(req, res) {
   var data = req.body;
@@ -114,7 +115,7 @@ exports.updateSettings = function(req, res) {
       res.send('error');
     }
   });
-}
+};
 
 exports.getClassHelp = function(req, res) {
   var data = req.query;
@@ -352,7 +353,7 @@ exports.postNewHelpInstance = function(req, res) {
   } else {
     res.send('error');
   }
-}
+};
 
 exports.postNewSemester = function(req, res) {
   var data = req.body;
@@ -387,7 +388,7 @@ exports.postNewSemester = function(req, res) {
   } else {
     res.send('error');
   }
-}
+};
 
 exports.postNewClassInstance = function(req, res) {
   var data = req.body;
@@ -484,6 +485,49 @@ exports.getInvitedUsers = function(req, res) {
   } else {
     res.send('error');
   }
+};
+
+exports.sendTestMail = function(req, res) {
+  var data = req.body;
+  if (data.organization) {
+    if (req.user.organization == data.organization) {
+      broadcast.testMail(data.organization, req.user.email, req.user.displayName, function(err, resp) {
+        if (!err) {
+          res.send('ok');
+        } else {
+          res.send('error');
+        }
+      });
+    }
+  }
+};
+
+exports.getActiveUsers = function(req, res) {
+  var data = req.query;
+  if (data.organization) {
+    if (req.user.organization == data.organization) {
+      Organization.findById(data.organization, function(err, organization) {
+        if (!err && organization) {
+          console.log(organization.users);
+          builder.arrayToObjects(User, organization.users, function(err, users) {
+            var activeUsers = [];
+            users.forEach(function(user) {
+              if (user.isActive) {
+                activeUsers.unshift(user);
+              }
+            });
+            res.send(activeUsers);
+          });
+        } else {
+          res.send('error');
+        }
+      });
+    } else {
+      res.send('error');
+    }
+  } else {
+    res.send('error');
+  }
 }
 
 exports.inviteUsers = function(req, res) {
@@ -495,16 +539,22 @@ exports.inviteUsers = function(req, res) {
           var users = data.users.split(',');
           var addUsers = [];
           var addInviteStatus = [];
-          var sendInvites = data.sendInvites == 'true';
-          users.forEach(function(user) {
-            if (organization.invitedUsers.indexOf(user) == -1) {
-              organization.invitedUsers.unshift(user);
-              organization.invitedUserStatuses.unshift(sendInvites);
+          prefs.broadcastEmailVerified(organization.id, function(err, canSendEmails) {
+            var sendInvites = (data.sendInvites == 'true' && canSendEmails);
+            var broadcastUsers = [];
+            users.forEach(function(user) {
+              if (organization.invitedUsers.indexOf(user) == -1) {
+                organization.invitedUsers.unshift(user);
+                organization.invitedUserStatuses.unshift(sendInvites);
+              }
+            });
+            if (sendInvites) {
+              broadcast.inviteMail(organization.id, req.user.displayName, users, function(err, response) {});
             }
-          });
-          organization.updatedAt = builder.currentEpochTime();
-          organization.save(function(err) {
-            res.send(organization);
+            organization.updatedAt = builder.currentEpochTime();
+            organization.save(function(err) {
+              res.send(organization);
+            });
           });
         } else {
           res.send('organization find error');

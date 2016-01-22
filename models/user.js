@@ -13,10 +13,7 @@ var userSchema = new mongoose.Schema({
   lastName: String,
   displayName: String,
   email: String,
-  reportedGPA: {
-    type: Number,
-    default: 0.00
-  },
+  googleID: Number,
   isActive: {
     type: Boolean,
     default: true
@@ -50,7 +47,11 @@ var userSchema = new mongoose.Schema({
     ref: 'Semester',
     default: []
   }],
-  googleID: Number
+  reports: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Report',
+    default: []
+  }]
 });
 
 module.exports = mongoose.model('User', userSchema);

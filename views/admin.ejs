@@ -2,13 +2,11 @@
 <script>
   $(document).ready(function() {
     var activeUsersTable = $('#activeUsersTable').DataTable({
-      bPaginate: false,
       bFilter: false,
       bInfo: false
     });
 
     var invitedUsersTable = $('#invitedUsersTable').DataTable({
-      bPaginate: false,
       bFilter: false,
       bInfo: false
     });
@@ -31,7 +29,7 @@
           user: '<%= user._id %>',
           organization: '<%= user.organization %>',
           users: $('#orgUsers').val(),
-          sendInvites: 'false'
+          sendInvites: ($('#orgEmail').attr('checked') ? 'true' : 'false')
         }),
         success: function(data) {
           $('#addUserDialog').dialog('close');
@@ -61,6 +59,30 @@
       });
     };
 
+    var getActiveUsers = function() {
+      $.ajax({
+        url: '/api/getActiveUsers',
+        method: 'GET',
+        contentType: 'application/json; charset=utf-8',
+        data: {
+          user: '<%= user._id %>',
+          organization: '<%= user.organization %>'
+        },
+        success: function(data) {
+          activeUsersTable.clear();
+          data.forEach(function(user) {
+            activeUsersTable.row.add([
+              user.displayName,
+              user.email,
+              '',
+              '',
+              ''
+            ]).draw( false );
+          });
+        }
+      });
+    };
+    getActiveUsers();
     getInvitedUsers();
   });
 </script>
@@ -72,7 +94,7 @@
       <thead>
         <tr>
           <th>USER</th>
-          <th>STATUS</th>
+          <th>EMAIL</th>
           <th>GPA</th>
           <th>GRADES</th>
           <th>HOURS</th>
@@ -104,6 +126,7 @@
 <div id="addUserDialog" title="INVITE USERS">
   USERS<br>
   <input id="orgUsers" type="text"><br>
+  <label><input id="orgEmail" type="checkbox" <%= canSendEmails ? 'checked' : 'disabled' %>>Send invite emails</label><br>
   <br>
   <button id="addUserSubmit">OK</button>
 </div>

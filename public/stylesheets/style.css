@@ -101,6 +101,7 @@ table {
 .cardContents {
   padding: 40px;
   position: relative;
+  color: #616161;
 }
 .cardTitle {
   font-size: 1.5em;
