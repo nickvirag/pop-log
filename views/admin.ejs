@@ -17,8 +17,20 @@
     });
 
     $('#addUsersButton').click(function() {
+      $('#orgUsers').val();
+      addUserValidation();
       $('#addUserDialog').dialog('open');
     });
+
+    var addUserValidation = function() {
+      if ($('#orgUsers').val()) {
+        $('#addUserSubmit').prop('disabled', false);
+      } else {
+        $('#addUserSubmit').prop('disabled', true);
+      }
+    };
+
+    $('#orgUsers').on('keyup', addUserValidation);
 
     $('#addUserSubmit').click(function() {
       $.ajax({

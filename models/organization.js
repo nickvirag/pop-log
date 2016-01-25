@@ -47,6 +47,26 @@ var organizationSchema = new mongoose.Schema({
     type: String,
     default: 'member'
   },
+  memberLabelPlural: {
+    type: String,
+    default: 'members'
+  },
+  gradesEnabled: {
+    type: Boolean,
+    default: true
+  },
+  libraryEnabled: {
+    type: Boolean,
+    default: true
+  },
+  hoursEnabled: {
+    type: Boolean,
+    default: true
+  },
+  categoriesEnabled: {
+    type: Boolean,
+    default: true
+  },
   isActive: {
     type: Boolean,
     default: true

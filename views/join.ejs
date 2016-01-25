@@ -7,13 +7,28 @@
     });
 
     $('#addOrgButton').click(function(event) {
+      addOrgValidation();
       $('#addOrgDialog').dialog('open');
 
       event.preventDefault();
       event.stopPropagation();
     });
 
-    $('#organizationSubmit').click(function(event) {
+    var addOrgValidation = function() {
+      if ($('#orgName').val() && $('#orgLocation').val() && $('#orgMemberLabel').val() && $('#orgMemberLabelPlural').val() && $('#orgClassTypes').val()) {
+        $('#organizationSubmit').prop('disabled', false);
+      } else {
+        $('#organizationSubmit').prop('disabled', true);
+      }
+    };
+
+    $('#orgName').on('keyup', addOrgValidation);
+    $('#orgLocation').on('keyup', addOrgValidation);
+    $('#orgMemberLabel').on('keyup', addOrgValidation);
+    $('#orgMemberLabelPlural').on('keyup', addOrgValidation);
+    $('#orgClassTypes').on('keyup', addOrgValidation);
+
+    $('#organizationSubmit').click(function() {
       $.ajax({
         url: '/api/postNewOrganization',
         method: 'POST',
@@ -24,6 +39,8 @@
           location: $('#orgLocation').val(),
           designation: $('#orgDesignation').val(),
           admins: $('#orgAdmins').val(),
+          memberLabel: $('#orgMemberLabel').val(),
+          memberLabelPlural: $('#orgMemberLabelPlural').val(),
           classTypes: $('#orgClassTypes').val()
         }),
         success: function(data) {
@@ -31,9 +48,6 @@
           location.reload();
         }
       });
-
-      event.preventDefault();
-      event.stopPropagation();
     });
 
     $('#organizationJoin').click(function(event) {
@@ -56,11 +70,15 @@
 <div class="card">
   <div class="cardContents">
     <div class="cardTitle">HELLO <%= user.displayName.toUpperCase() %>!</div>
+    <% if (typeof organizations != 'undefined' && organizations.length > 0) { %>
     <select id="organizationSelector">
-    <% typeof organizations != 'undefined' && organizations.forEach(function(organization) { %>
+      <% organizations.forEach(function(organization) { %>
       <option value="<%= organization._id %>"><%= organization.displayName %></option>
-    <% }); %>
-  </select>&nbsp;&nbsp;&nbsp;<button id="organizationJoin">REGISTER</button><br>
+      <% }); %>
+    </select>&nbsp;&nbsp;&nbsp;<button id="organizationJoin">REGISTER</button>
+    <% } else { %>
+    Your email address <%= user.email %> doesn't have any pending organization invites! If you received an email invite, you must log in using that email address.
+    <% } %>
   </div>
 </div>
 
@@ -69,24 +87,27 @@
 </div>
 
 <div id="addOrgDialog" title="Add an organization">
-  Organization location:<br>
+  Organization location:*<br>
   <input id="orgLocation" type="text" placeholder="Faber College"><br>
   <br>
-  Organization name:<br>
+  Organization name:*<br>
   <input id="orgName" type="text" placeholder="Delta Tau Chi"><br>
   <br>
   Chapter designation (Greek organizations only):
   <input id="orgDesignation" type="text" placeholder="Alpha Beta"><br>
   <br>
-  Member label:<br>
+  Member label:*<br>
   <input id="orgMemberLabel" type="text" value="member"><br>
   <br>
-  Class types:<br>
+  Member label (plural):*<br>
+  <input id="orgMemberLabelPlural" type="text" value="members"><br>
+  <br>
+  Class types (separated by commas):*<br>
   <input id="orgClassTypes" type="text"><br>
   <br>
   Admins (including <%= user.email %>):<br>
   <input id="orgAdmins" type="text"><br>
   <br>
   <br>
-  <a id="organizationSubmit" href="#">Create organization</a>
+  <button id="organizationSubmit">SUBMIT</button>
 </div>

@@ -199,6 +199,9 @@ exports.postNewOrganization = function(req, res) {
     if (data.memberLabel) {
       organization.memberLabel = data.memberLabel;
     }
+    if (data.memberLabelPlural) {
+      organization.memberLabelPlural = data.memberLabelPlural;
+    }
     if (data.classTypes) {
       organization.classTypes = data.classTypes.split(',');
     }

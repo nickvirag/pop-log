@@ -179,6 +179,9 @@
         $("#logHoursClass").append($("<option />").val(fClass.id).text(fClass.classCode + ' ' + fClass.classIdentifier));
       });
       $("#logHoursClass").append($("<option />").val('').text('Other'));
+      $('#hoursDescription').val('');
+      $('#postHelpHours').prop('selectedIndex', 0);
+      logHoursValidation();
       $('#logHoursMasterDialog').dialog('open');
     });
 
@@ -228,13 +231,51 @@
     };
 
     var dropButtonClick = function(event) {
+      $('#dropClassExcuse').val('');
+      dropClassValidation();
       $('#dropClassDialog').dialog('open');
       $('#dropClassID').val($(this).data('class'));
       event.preventDefault();
       event.stopPropagation();
     };
 
+    var newClassValidation = function() {
+      if ($('#newClassIdentifier').val() && $('#newClassCRN').val()) {
+        $('#newClassSubmit').prop('disabled', false);
+      } else {
+        $('#newClassSubmit').prop('disabled', true);
+      }
+    };
+
+    $('#newClassIdentifier').on('keyup', newClassValidation);
+    $('#newClassCRN').on('keyup', newClassValidation);
+
+    var logHoursValidation = function() {
+      if ($('#hoursDescription').val()) {
+        $('#logHoursSubmit').prop('disabled', false);
+      } else {
+        $('#logHoursSubmit').prop('disabled', true);
+      }
+    };
+
+    $('#hoursDescription').on('keyup', logHoursValidation);
+
+    var dropClassValidation = function() {
+      if ($('#dropClassExcuse').val()) {
+        $('#dropClassSubmit').prop('disabled', false);
+      } else {
+        $('#dropClassSubmit').prop('disabled', true);
+      }
+    };
+
+    $('#dropClassExcuse').on('keyup', dropClassValidation);
+
     $('#newClassButton').click(function(event) {
+      $('#newClassIdentifier').val('');
+      $('#newClassCRN').val('');
+      $('#newClassCode').prop('selectedIndex', 0);
+      $('#newClassCredits').prop('selectedIndex', 0);
+      newClassValidation();
       $('#newClassDialog').dialog('open');
     });
 
@@ -397,8 +438,7 @@ HOURS THIS WEEK: <span id="hoursLogged">0</span>
 
 <div id="dropClassDialog" title="DROP CLASS">
   <input type="hidden" id="dropClassID" value="">
-  ENTER REASON FOR DROPPING CLASS<br>
-  <input type="text" id="dropClassExcuse"><br>
+  <input type="text" id="dropClassExcuse" placeholder="Why did you drop this class?"><br>
   <br>
   <button id="dropClassSubmit">SUBMIT</button>
 </div>
@@ -406,8 +446,18 @@ HOURS THIS WEEK: <span id="hoursLogged">0</span>
 <div id="logHoursMasterDialog" title="LOG HOURS">
   <select id="logHoursClass"></select><br>
   <div id="logHoursText"></div>
-  Write about it: <input type="text" id="hoursDescription" value=""><br>
-  Number of hours: <input type="number" id="postHelpHours" value="0"><br>
+  Write about it: <input type="text" id="hoursDescription"><br>
+  Number of hours: <select id="postHelpHours">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+    <option value="9">9</option>
+  </select><br>
   <br>
   <!--Studied with: <input type="number" id="postHelpUsers" value=""><br>-->
   <button id="logHoursSubmit">SUBMIT</button>
