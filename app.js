@@ -143,11 +143,13 @@ app.post('/api/sendTestMail', ensureAuthenticatedAndUserAndAdmin, api.sendTestMa
 
 app.get('/api/getActiveUsers', ensureAuthenticatedAndUserAndAdmin, api.getActiveUsers);
 
+app.get('/api/getActiveUsersByTrimester', ensureAuthenticatedAndUserAndAdmin, api.getActiveUsersByTrimester);
+
 app.get('/api/getSemester', ensureAuthenticated, api.getSemester);
 
 app.get('/api/getSemesters', ensureAuthenticatedAndUser, api.getSemesters);
 
-app.get('/api/getLogs', ensureAuthenticated, api.getLogs);
+app.get('/api/getLogs', ensureAuthenticatedAndUserOrAdmin, api.getLogs);
 
 app.post('/api/dropClassInstance', ensureAuthenticated, api.dropClassInstance);
 
@@ -184,6 +186,13 @@ function ensureAuthenticated(req, res, next) {
 
 function ensureAuthenticatedAndUser(req, res, next) {
   if (req.isAuthenticated() && (req.query.user == req.user.id || req.body.user == req.user.id)) {
+    return next();
+  }
+  res.redirect('/login');
+}
+
+function ensureAuthenticatedAndUserOrAdmin(req, res, next) {
+  if (req.isAuthenticated() && (req.user.isAdmin || req.query.user == req.user.id || req.body.user == req.user.id)) {
     return next();
   }
   res.redirect('/login');

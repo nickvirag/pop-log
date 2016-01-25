@@ -193,8 +193,6 @@
       event.stopPropagation();
     });
 
-    // data.trimester && data.year && data.classCode && data.classIdentifier && data.user
-
     $('#newClassSubmit').click(function(event) {
       $.ajax({
         url: '/api/newClassInstance',

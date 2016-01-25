@@ -151,10 +151,73 @@ exports.getClassHelp = function(req, res) {
 
 exports.getLogs = function(req, res) {
   var data = req.query;
-  builder.getJSONLogs(req.user, data, function(err, response){
+  builder.getJSONLogs(data, function(err, response) {
     res.send(response);
   });
 };
+
+exports.getActiveUsersByTrimester = function(req, res) {
+  var data = req.query;
+  if (data.semesterContainer && data.year && data.organization) {
+    Organization.findById(data.organization, function(err, organization) {
+      if (!err && organization) {
+        builder.arrayToObjects(User, organization.users, function(err, users) {
+          if (!err && users) {
+            var calls = [];
+            users.forEach(function(user) {
+              if (user.isActive) {
+                calls.push(function(response) {
+                  builder.arrayToObjects(Semester, user.semesters, function(err, semesters) {
+                    if (!err && semesters) {
+                      var matchFound = {};
+                      var matchedSemester = null;
+                      try {
+                        semesters.forEach(function(semester) {
+                          if (semester.semesterContainer == data.semesterContainer && semester.year == data.year) {
+                            matchedSemester = semester;
+                            throw matchFound;
+                          }
+                        });
+                      } catch(e) {
+                        if (e !== matchFound) {
+                          throw e;
+                        }
+                      }
+                      if (matchedSemester) {
+                        response(null, {
+                          displayName: user.displayName,
+                          email: user.email,
+                          isRegistered: true
+                        });
+                      } else {
+                        response(null, {
+                          displayName: user.displayName,
+                          email: user.email,
+                          isRegistered: false
+                        });
+                      }
+                    } else {
+                      res.send('error');
+                    }
+                  });
+                });
+              }
+            });
+            async.series(calls, function(err, resp) {
+              res.send(resp);
+            });
+          } else {
+            res.send('error');
+          }
+        });
+      } else {
+        res.send('error');
+      }
+    });
+  } else {
+    res.send('error');
+  }
+}
 
 exports.joinOrganization = function(req, res) {
   var data = req.body;

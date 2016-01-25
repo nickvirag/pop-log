@@ -119,18 +119,20 @@ exports.getJSONSemester = function(user, data, callback) {
   }
 };
 
-exports.getJSONLogs = function(user, data, callback) {
+exports.getJSONLogs = function(data, callback) {
   if (data.user) {
-    if (user.id == data.user) {
-      User.findById(data.user, function(err, user) {
-        if (!err && user) {
-          exports.arrayToObjects(HelpInstance, user.helpInstances, function(err, helpInstances) {
-            var lastSunday = new Date();
-            lastSunday.setDate(lastSunday.getDate() - lastSunday.getDay());
-            lastSunday.setHours(0, 0, 0, 0);
-            var addLog = function(addHelpInstance, addHelpClassText) {
-              var date = new Date(addHelpInstance.completedDate * 1000);
-              lastSunday.setHours(0, 0, 0, 0);
+    User.findById(data.user, function(err, user) {
+      if (!err && user) {
+        exports.arrayToObjects(HelpInstance, user.helpInstances, function(err, helpInstances) {
+          var startDate = data.weekOf ? new Date(data.weekOf * 1000) : new Date();
+          var endDate = new Date();
+          startDate.setDate(startDate.getDate() - startDate.getDay());
+          startDate.setHours(0, 0, 0, 0);
+          endDate.setDate(startDate.getDate() + 6);
+          endDate.setHours(23, 59, 59, 999);
+          var addLog = function(addHelpInstance, addHelpClassText) {
+            var date = new Date(addHelpInstance.completedDate * 1000);
+            if (startDate < date && date < endDate) {
               return {
                 completedDate: dateFormat(date, prefs.getDateFormat()),
                 day: dateFormat(date, 'dddd'),
@@ -138,32 +140,32 @@ exports.getJSONLogs = function(user, data, callback) {
                 description: exports.helpInstanceText(addHelpInstance),
                 hours: addHelpInstance.helpType == 0 ? addHelpInstance.hours : 0
               };
-            };
-            var calls = [];
-            helpInstances.forEach(function(helpInstance) {
-              calls.push(function(response) {
-                if (helpInstance.classInstance && helpInstance.classInstance != '') {
-                  ClassInstance.findById(helpInstance.classInstance, function(err, classInstance) {
-                    Class.findById(classInstance.class, function(err, fClass) {
-                      response(err, addLog(helpInstance, fClass.classCode + ' ' + fClass.classIdentifier));
-                    });
+            } else {
+              return null;
+            }
+          };
+          var calls = [];
+          helpInstances.forEach(function(helpInstance) {
+            calls.push(function(response) {
+              if (helpInstance.classInstance && helpInstance.classInstance != '') {
+                ClassInstance.findById(helpInstance.classInstance, function(err, classInstance) {
+                  Class.findById(classInstance.class, function(err, fClass) {
+                    response(err, addLog(helpInstance, fClass.classCode + ' ' + fClass.classIdentifier));
                   });
-                } else {
-                  response(null, addLog(helpInstance, 'Other'));
-                }
-              });
-            });
-            async.series(calls, function(err, logs) {
-              callback(null, logs);
+                });
+              } else {
+                response(null, addLog(helpInstance, 'Other'));
+              }
             });
           });
-        } else {
-          callback('error', null);
-        }
-      });
-    } else {
-      callback('user mismatch error', null);
-    }
+          async.series(calls, function(err, logs) {
+            callback(null, logs);
+          });
+        });
+      } else {
+        callback('error', null);
+      }
+    });
   } else {
     callback('missing parameters error', null);
   }

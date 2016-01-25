@@ -71,17 +71,19 @@
       });
     };
 
-    var getActiveUsers = function() {
+    var getActiveUsersByTrimester = function() {
       $.ajax({
-        url: '/api/getActiveUsers',
+        url: '/api/getActiveUsersByTrimester',
         method: 'GET',
         contentType: 'application/json; charset=utf-8',
         data: {
           user: '<%= user._id %>',
-          organization: '<%= user.organization %>'
+          organization: '<%= user.organization %>',
+          semesterContainer: $('#activeUsersTrimester').val(),
+          year: $('#activeUsersYear').val()
         },
         success: function(data) {
-          activeUsersTable.clear();
+          activeUsersTable.clear().draw();
           data.forEach(function(user) {
             activeUsersTable.row.add([
               user.displayName,
@@ -94,7 +96,11 @@
         }
       });
     };
-    getActiveUsers();
+
+    $('#submitActiveUsers').click(function() {
+      getActiveUsersByTrimester();
+    });
+    getActiveUsersByTrimester();
     getInvitedUsers();
   });
 </script>
@@ -102,6 +108,14 @@
 <div class="card">
   <div class="cardContents">
     <div class="cardTitle">ACTIVE USERS</div>
+    <select id="activeUsersTrimester">
+    <% semesterContainers.forEach(function(semesterContainer) { %>
+      <option value="<%= semesterContainer.id%>"><%= semesterContainer.label %></option>
+    <% }); %>
+    </select>
+    <input id="activeUsersYear" type="text" value="<%= currentYear %>">
+    <button id="submitActiveUsers">SUBMIT</button><br>
+    <br>
     <table id="activeUsersTable">
       <thead>
         <tr>

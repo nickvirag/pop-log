@@ -76,7 +76,7 @@ exports.getCurrentTrimester = function(id, callback) {
 };
 
 exports.getCurrentYear = function () {
-  return new Date().getYear();
+  return (new Date()).getFullYear();
 };
 
 exports.broadcastEmailVerified = function(organizationId, response) {
