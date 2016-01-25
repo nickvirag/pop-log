@@ -4,6 +4,8 @@ var router = express.Router();
 
 var app = express();
 
+var prefs = require('../helpers/prefs.js');
+
 var Organization = require('../models/organization.js');
 
 var mongoose = require('mongoose');
@@ -13,7 +15,8 @@ exports.get = function(req, res) {
   Organization.findById(req.user.organization, function(err, organization) {
     res.render('settings', {
       user: req.user,
-      organization: organization
+      organization: organization,
+      reportFrequencies: prefs.getReportFrequencies()
     });
   });
 };

@@ -143,6 +143,10 @@ app.post('/api/sendTestMail', ensureAuthenticatedAndUserAndAdmin, api.sendTestMa
 
 app.get('/api/getActiveUsers', ensureAuthenticatedAndUserAndAdmin, api.getActiveUsers);
 
+app.get('/api/getCategories', ensureAuthenticatedAndUserAndAdmin, api.getCategories);
+
+app.post('/api/postNewCategory', ensureAuthenticatedAndUserAndAdmin, api.postNewCategory);
+
 app.get('/api/getActiveUsersByTrimester', ensureAuthenticatedAndUserAndAdmin, api.getActiveUsersByTrimester);
 
 app.get('/api/getSemester', ensureAuthenticated, api.getSemester);

@@ -110,3 +110,24 @@ exports.getYearOptions = function() {
   var year = today.getFullYear();
   return (today.getMonth() < 9) ? [year] : [year, year + 1];
 };
+
+exports.getReportFrequencies = function() {
+  return [
+    {
+      index: 0,
+      label: 'EVERY WEEK'
+    }, {
+      index: 1,
+      label: 'EVERY TWO WEEKS'
+    }, {
+      index: 2,
+      label: 'END OF MONTH'
+    }, {
+      index: 3,
+      label: 'MID-SEMESTER'
+    }, {
+      index: 4,
+      label: 'END OF SEMESTER'
+    }
+  ];
+}

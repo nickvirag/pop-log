@@ -14,11 +14,23 @@ var categorySchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  isActive: {
+    type: Boolean,
+    default: true
+  },
   minimumGPA: Number,
   maximumGPA: Number,
   minimumStudyHours: {
     type: Number,
     default: 0
+  },
+  studyHoursRequired: {
+    type: Boolean,
+    default: false
+  },
+  reportsRequired: {
+    type: Boolean,
+    default: false
   },
   reportFrequency: {
     type: Number,

@@ -14,6 +14,7 @@ var ClassInstance = require('../models/classinstance.js');
 var HelpInstance = require('../models/helpinstance.js');
 var Class = require('../models/class.js');
 var Organization = require('../models/organization.js');
+var Category = require('../models/category.js');
 
 var builder = require('../helpers/builder');
 var prefs = require('../helpers/prefs');
@@ -596,6 +597,78 @@ exports.getActiveUsers = function(req, res) {
   }
 }
 
+exports.postNewCategory = function(req, res) {
+  var data = req.body;
+  if (data.organization && data.label && data.minimumGPA && data.maximumGPA) {
+    if (req.user.organization == data.organization) {
+      Organization.findById(data.organization, function(err, organization) {
+        if (!err && organization) {
+          var category = new Category({
+            organization: organization.id,
+            label: data.label,
+            minimumGPA: data.minimumGPA,
+            maximumGPA: data.maximumGPA
+          });
+          if (data.description) {
+            category.description = data.description;
+          }
+          if (data.minimumStudyHours) {
+            category.minimumStudyHours = data.minimumStudyHours;
+          }
+          if (data.studyHoursRequired) {
+            category.studyHoursRequired = data.minimumStudyHours == 'true';
+          }
+          if (data.reportsRequired) {
+            category.reportsRequired = data.reportsRequired == 'true';
+          }
+          if (data.reportFrequency) {
+            category.reportFrequency = data.reportFrequency;
+          }
+          category.save(function(err) {
+            organization.categories.unshift(category.id);
+            organization.updatedAt = builder.currentEpochTime();
+            organization.save();
+            res.send(category);
+          });
+        } else {
+          res.send('error');
+        }
+      });
+    } else {
+      res.send('error');
+    }
+  } else {
+    res.send('error');
+  }
+};
+
+exports.getCategories = function(req, res) {
+  var data = req.query;
+  if (data.organization) {
+    if (req.user.organization == data.organization) {
+      Organization.findById(data.organization, function(err, organization) {
+        if (!err && organization) {
+          builder.arrayToObjects(Category, organization.categories, function(err, categories) {
+            var output = [];
+            categories.forEach(function(category) {
+              if (category.isActive) {
+                output.unshift(category);
+              }
+            });
+            res.send(output);
+          });
+        } else {
+          res.send('error');
+        }
+      });
+    } else {
+      res.send('error');
+    }
+  } else {
+    res.send('error');
+  }
+}
+
 exports.inviteUsers = function(req, res) {
   var data = req.body;
   if (data.users && data.organization && data.sendInvites) {
@@ -623,14 +696,14 @@ exports.inviteUsers = function(req, res) {
             });
           });
         } else {
-          res.send('organization find error');
+          res.send('error');
         }
       });
     } else {
-      res.send('organization match error');
+      res.send('error');
     }
   } else {
-    res.send('params error');
+    res.send('error');
   }
 };
 

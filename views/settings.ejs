@@ -1,6 +1,18 @@
 <% layout('layout') %>
+<% if (user.isAdmin) { %>
 <script>
   $(document).ready(function() {
+    var categoriesTable = $('#categoriesTable').DataTable({
+      bPaginate: false,
+      bFilter: false,
+      bInfo: false
+    });
+
+    $('#newCategoryDialog').dialog({
+      modal: true,
+      autoOpen: false
+    });
+
     $('#organizationSubmit').click(function() {
       $.ajax({
         url: '/api/updateSettings',
@@ -31,12 +43,119 @@
         }
       });
     });
+
+    var getCategories = function() {
+      $.ajax({
+        url: '/api/getCategories',
+        method: 'GET',
+        contentType: 'application/json; charset=utf-8',
+        data: {
+          user: '<%= user._id %>',
+          organization: '<%= user.organization %>'
+        },
+        success: function(data) {
+          categoriesTable.clear();
+          data.forEach(function(category) {
+            categoriesTable.row.add([
+              category.label,
+              category.minimumGPA.toFixed(2) + ' - ' + category.maximumGPA.toFixed(2),
+              category.studyHoursRequired ? category.minimumStudyHours : '---',
+              category.reportsRequired ? category.reportFrequency : '---',
+              'REMOVE'
+            ]).draw(false);
+          });
+        }
+      });
+    };
+
+    $('#newCategoryButton').click(function() {
+      $('#categoryLabel').val('');
+      $('#categoryDescription').val('');
+      populateMinimumGPA();
+      populateMaximumGPA();
+      $('#categoryStudyHoursRequired').change();
+      $('#categoryReportsRequired').change();
+      newCategoryValidation();
+      $('#newCategoryDialog').dialog('open');
+    });
+
+    var populateMinimumGPA = function() {
+      $('#categoryMinimumGPA').append($("<option />").val('-1').text('< 0.00'));
+      for (var x = 0.0; x <= 5.0; x += 0.1) {
+        var rounded = Math.round(x * 100) / 100;
+        $('#categoryMinimumGPA').append($("<option />").val(rounded).text(rounded.toFixed(2)));
+      }
+    };
+
+    var populateMaximumGPA = function() {
+      $('#categoryMaximumGPA').find('option').remove();
+      var minimum = $('#categoryMinimumGPA').val() == '-1' ? 0.0 : (Number($('#categoryMinimumGPA').val()) + 0.1);
+      for (var x = minimum; x <= 5.0; x += 0.1) {
+        var rounded = Math.round(x * 100) / 100;
+        $('#categoryMaximumGPA').append($("<option />").val(rounded).text(rounded.toFixed(2)));
+      }
+      $('#categoryMaximumGPA').append($("<option />").val('-1').text('> 5.00'));
+    };
+
+    $('#categoryMinimumGPA').change(populateMaximumGPA);
+
+    $('#categoryStudyHoursRequired').change(function() {
+      if($('#categoryStudyHoursRequired').is(':checked')) {
+        $('#categoryMinimumStudyHours').prop('disabled', false);
+      } else {
+        $('#categoryMinimumStudyHours').prop('disabled', true);
+      }
+    });
+
+    $('#categoryReportsRequired').change(function() {
+      if($('#categoryReportsRequired').is(':checked')) {
+        $('#categoryReportFrequency').prop('disabled', false);
+      } else {
+        $('#categoryReportFrequency').prop('disabled', true);
+      }
+    });
+
+    $('#newCategorySubmit').click(function() {
+      $.ajax({
+        url: '/api/postNewCategory',
+        method: 'POST',
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify({
+          user: '<%= user._id %>',
+          organization: '<%= user.organization %>',
+          label: $('#categoryLabel').val(),
+          description: $('#categoryDescription').val(),
+          minimumGPA: $('#categoryMinimumGPA').val(),
+          maximumGPA: $('#categoryMaximumGPA').val(),
+          studyHoursRequired: ($('#categoryStudyHoursRequired').attr('checked') ? 'true' : 'false'),
+          minimumStudyHours: $('#categoryMinimumStudyHours').val(),
+          reportsRequired: ($('#categoryReportsRequired').attr('checked') ? 'true' : 'false'),
+          reportFrequency: $('#categoryReportFrequency').val()
+        }),
+        success: function(data) {
+          getCategories();
+          $('#newCategoryDialog').dialog('close');
+        }
+      });
+    });
+
+    var newCategoryValidation = function() {
+      if ($('#categoryLabel').val()) {
+        $('#newCategorySubmit').prop('disabled', false);
+      } else {
+        $('#newCategorySubmit').prop('disabled', true);
+      }
+    };
+
+    $('#categoryLabel').on('keyup', newCategoryValidation);
+
+    getCategories();
   });
 </script>
+
 <div class="card">
   <div class="cardContents">
-    <div class="cardTitle">SETTINGS</div>
-    <% if (user.isAdmin) { %>
+    <div class="cardTitle">EMAIL</div>
     ORGANIZATION EMAIL<br>
     <input id="emailUsername" type="text" value="<%= organization.emailUsername %>"><br>
     <br>
@@ -49,8 +168,78 @@
     <br>
     <br>
     <button id="organizationSubmit">Submit</button> <button id="sendTestMail">Send test email to <%= user.email %></button>
-    <% } else { %>
-    COMING SOON
-    <% } %>
   </div>
 </div>
+
+<div class="card">
+  <div class="cardContents">
+    <div class="cardTitle">CATEGORIES</div>
+    <div class="fabLeft">
+      <table id="categoriesTable">
+        <thead>
+          <tr>
+            <th>CATEGORY</th>
+            <th>GPA RANGE</th>
+            <th>HOURS</th>
+            <th>REPORTS</th>
+            <th>ACTIONS</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+    <button id="newCategoryButton" class="floatingActionButton">+</button>
+  </div>
+</div>
+
+<div id="newCategoryDialog" title="NEW CATEGORY">
+  LABEL*<br>
+  <input id="categoryLabel" type="text"><br>
+  <br>
+  DESCRIPTION<br>
+  <input id="categoryDescription" type="text"><br>
+  <br>
+  GPA RANGE*<br>
+  <select id="categoryMinimumGPA"></select> - <select id="categoryMaximumGPA"></select><br>
+  <br>
+  <label><input id="categoryStudyHoursRequired" type="checkbox">REQUIRE STUDY HOURS</label><br>
+  <select id="categoryMinimumStudyHours">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+    <option value="9">9</option>
+    <option value="10">10</option>
+    <option value="11">11</option>
+    <option value="12">12</option>
+    <option value="13">13</option>
+    <option value="14">14</option>
+    <option value="15">15</option>
+    <option value="16">16</option>
+    <option value="17">17</option>
+    <option value="18">18</option>
+    <option value="19">19</option>
+    <option value="20">20</option>
+    <option value="21">21</option>
+    <option value="22">22</option>
+    <option value="23">23</option>
+    <option value="24">24</option>
+  </select> PER WEEK<br>
+  <br>
+  <label><input id="categoryReportsRequired" type="checkbox">REQUIRE ACADEMIC REPORTS</label><br>
+  <select id="categoryReportFrequency">
+    <% reportFrequencies.forEach(function(reportFrequency) { %>
+    <option value="<%= reportFrequency.index %>"><%= reportFrequency.label %></option>
+    <% }); %>
+  </select> WEEK(S)<br>
+  <br>
+  <button id="newCategorySubmit">SUBMIT</button>
+</div>
+<% } else { %>
+COMING SOON
+<% } %>
