@@ -51,9 +51,11 @@ table {
   text-decoration: none;
 }
 #nav {
+  font-size: 0.85em;
 }
 #bannerTitle {
   font-size: 3em;
+  font-family: 'Lobster', cursive;
 }
 #content {
   max-width: 800px;

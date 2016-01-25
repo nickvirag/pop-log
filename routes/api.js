@@ -191,7 +191,7 @@ exports.postNewOrganization = function(req, res) {
       displayName: data.displayName,
       admins: admins,
       location: data.location,
-      classGrades: data.classGrades ? data.classGrades.split(',') : ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'D-', 'F']
+      classGrades: data.classGrades ? data.classGrades.split(',') : ['⎯', 'A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C', 'C-', 'D+', 'D', 'D-', 'F']
     });
     if (data.designation) {
       organization.designation = data.designation;

@@ -270,6 +270,7 @@
           id: $('#dropClassID').val()
         }),
         success: function(data) {
+          $('#semesterSelector').change();
           $('#dropClassDialog').dialog('close');
         }
       });
