@@ -11,6 +11,14 @@ mongoose.set('debug', true);
 
 var url = '/';
 
-exports.get = function(req, res){
-  res.render('index', { user: req.user });
+exports.get = function(req, res) {
+  if (req.user) {
+    if (req.user.isAdmin) {
+      res.redirect('/admin');
+    } else {
+      res.redirect('/user');
+    }
+  } else {
+    res.redirect('/login');
+  }
 };

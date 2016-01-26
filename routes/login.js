@@ -10,5 +10,9 @@ mongoose.set('debug', true);
 var url = '/login';
 
 exports.get = function(req, res){
-  res.render('login', { user: req.user });
+  if (req.user) {
+    res.redirect('/');
+  } else {
+    res.render('login', { user: req.user });
+  }
 };
