@@ -2,6 +2,7 @@
 <% if (user.isAdmin) { %>
 <script>
   $(document).ready(function() {
+    var disabledGPAs = [];
     var categoriesTable = $('#categoriesTable').DataTable({
       bPaginate: false,
       bFilter: false,
@@ -54,8 +55,27 @@
           organization: '<%= user.organization %>'
         },
         success: function(data) {
+          disabledGPAs = [];
           categoriesTable.clear().draw();
           data.forEach(function(category) {
+            var min, max;
+            if (category.minimumGPA == -99) {
+              disabledGPAs.push(-99);
+              min = -0.9;
+            } else {
+              min = category.minimumGPA;
+            }
+            if (category.maximumGPA == 99) {
+              disabledGPAs.push(99);
+              max = 5.1;
+            } else {
+              max = category.maximumGPA;
+            }
+            for(var x = min + 0.1; x < max; x += 0.1) {
+              if (disabledGPAs.indexOf(x.toFixed(2)) == -1) {
+                disabledGPAs.push(x.toFixed(2));
+              }
+            }
             categoriesTable.row.add([
               category.label,
               category.minimumGPA.toFixed(2) + ' - ' + category.maximumGPA.toFixed(2),
@@ -101,21 +121,37 @@
     });
 
     var populateMinimumGPA = function() {
-      $('#categoryMinimumGPA').append($("<option />").val('-99').text('< 0.00'));
+      var flags = '';
+      if (disabledGPAs.indexOf('-99') != -1) {
+        flags += 'disabled';
+      }
+      $('#categoryMinimumGPA').append($('<option ' + flags + ' />').val('-99').text('< 0.00'));
       for (var x = 0.0; x <= 5.0; x += 0.1) {
+        flags = '';
         var rounded = Math.round(x * 100) / 100;
-        $('#categoryMinimumGPA').append($("<option />").val(rounded).text(rounded.toFixed(2)));
+        if (disabledGPAs.indexOf(rounded.toFixed(2)) != -1) {
+          flags += 'disabled';
+        }
+        $('#categoryMinimumGPA').append($('<option ' + flags + ' />').val(rounded).text(rounded.toFixed(2)));
       }
     };
 
     var populateMaximumGPA = function() {
       $('#categoryMaximumGPA').find('option').remove();
+      var flags = '';
       var minimum = $('#categoryMinimumGPA').val() == '-99' ? 0.0 : (Number($('#categoryMinimumGPA').val()) + 0.1);
       for (var x = minimum; x <= 5.0; x += 0.1) {
         var rounded = Math.round(x * 100) / 100;
-        $('#categoryMaximumGPA').append($("<option />").val(rounded).text(rounded.toFixed(2)));
+        if (disabledGPAs.indexOf(rounded.toFixed(2)) != -1) {
+          flags += 'disabled';
+        }
+        $('#categoryMaximumGPA').append($('<option ' + flags + ' />').val(rounded).text(rounded.toFixed(2)));
       }
-      $('#categoryMaximumGPA').append($("<option />").val('99').text('> 5.00'));
+      var flags = '';
+      if (disabledGPAs.indexOf('99') != -1) {
+        flags += 'disabled';
+      }
+      $('#categoryMaximumGPA').append($('<option ' + flags + ' />').val('99').text('> 5.00'));
     };
 
     $('#categoryMinimumGPA').change(populateMaximumGPA);
