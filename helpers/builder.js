@@ -3,8 +3,11 @@ var router = express.Router();
 var app = express();
 
 var User = require('../models/user.js');
+var SemesterContainer = require('../models/semestercontainer.js');
 var Semester = require('../models/semester.js');
 var ClassInstance = require('../models/classinstance.js');
+var Category = require('../models/category.js');
+var Organization = require('../models/organization.js');
 var HelpInstance = require('../models/helpinstance.js');
 var Class = require('../models/class.js');
 
@@ -63,6 +66,47 @@ exports.helpInstanceText = function(helpInstance) {
   return description;
 }
 
+exports.createSemester = function(data, callback) {
+  if (data.semesterContainer && data.year && data.user) {
+    SemesterContainer.findById(data.semesterContainer, function(err, semesterContainer) {
+      Semester.findOne({
+        user: data.user,
+        semesterContainer: semesterContainer.id,
+        year: data.year
+      }).exec(function(err, semester) {
+        if (!err && semester) {
+          callback('error', null);
+        } else {
+          User.findById(data.user, function(err, user) {
+            if (!err && user) {
+              var semester = new Semester({
+                user: data.user,
+                trimesterLabel: semesterContainer.label,
+                year: data.year,
+                semesterContainer: semesterContainer.id,
+                organization: semesterContainer.organization
+              });
+              semester.save(function(err) {
+                user.semesters.unshift(semester.id);
+                user.updatedAt = exports.currentEpochTime();
+                user.save();
+                semesterContainer.semesters.unshift(semester.id);
+                semesterContainer.updatedAt = exports.currentEpochTime();
+                semesterContainer.save();
+                callback(null, semester);
+              });
+            } else {
+              callback('error', null);
+            }
+          });
+        }
+      });
+    });
+  } else {
+    callback('error', null);
+  }
+};
+
 exports.getJSONSemester = function(user, data, callback) {
   if (data.user && data.semester) {
     if (user.id == data.user) {
@@ -118,6 +162,47 @@ exports.getJSONSemester = function(user, data, callback) {
     callback('error', {});
   }
 };
+
+exports.getCategoryFromSemester = function(data, callback) {
+  if (data.semester) {
+    Semester.findById(data.semester, function(err, semester) {
+      if (!err && semester) {
+        console.log(semester.organization);
+        Organization.findById(semester.organization, function(err, organization) {
+          if (!err && organization) {
+            exports.arrayToObjects(Category, organization.categories, function(err, categories) {
+              if (!err && categories) {
+                var semesterCategory = {};
+                var categoryFound = {};
+                try {
+                  categories.forEach(function(category) {
+                    if (category.isActive && category.minimumGPA <= semester.reportedGPA && semester.reportedGPA >= category.maximumGPA) {
+                      semesterCategory = category;
+                      throw categoryFound;
+                    }
+                  });
+                } catch (e) {
+                  if (e !== categoryFound) {
+                    throw e;
+                  }
+                }
+                callback(null, categoryFound);
+              } else {
+                callback('categories error', null);
+              }
+            });
+          } else {
+            callback('org error ' + err, null);
+          }
+        });
+      } else {
+        callback('semester error', null);
+      }
+    });
+  } else {
+    callback('input error', null);
+  }
+}
 
 exports.getJSONLogs = function(data, callback) {
   if (data.user) {

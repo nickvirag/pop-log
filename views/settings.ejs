@@ -54,18 +54,39 @@
           organization: '<%= user.organization %>'
         },
         success: function(data) {
-          categoriesTable.clear();
+          categoriesTable.clear().draw();
           data.forEach(function(category) {
             categoriesTable.row.add([
               category.label,
               category.minimumGPA.toFixed(2) + ' - ' + category.maximumGPA.toFixed(2),
-              category.studyHoursRequired ? category.minimumStudyHours : '---',
-              category.reportsRequired ? category.reportFrequency : '---',
-              'REMOVE'
+              category.studyHoursRequired ? category.minimumStudyHours : 'NONE',
+              category.reportsRequired ? category.reportFrequency : 'NONE',
+              '<a class="categoryDropButton" id="categoryDropButton_' + category._id + '" data-category="' + category._id + '" href="#">DELETE</a>'
             ]).draw(false);
+            $('#categoryDropButton_' + category._id).click(deleteCategoryClick);
           });
         }
       });
+    };
+
+    var deleteCategoryClick = function(event) {
+      var self = this;
+      $.ajax({
+        url: '/api/dropCategory',
+        method: 'POST',
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify({
+          user: '<%= user._id %>',
+          organization: '<%= user.organization %>',
+          category: $(self).data('category')
+        }),
+        success: function(data) {
+          getCategories();
+        }
+      });
+
+      event.preventDefault();
+      event.stopPropagation();
     };
 
     $('#newCategoryButton').click(function() {
@@ -80,7 +101,7 @@
     });
 
     var populateMinimumGPA = function() {
-      $('#categoryMinimumGPA').append($("<option />").val('-1').text('< 0.00'));
+      $('#categoryMinimumGPA').append($("<option />").val('-99').text('< 0.00'));
       for (var x = 0.0; x <= 5.0; x += 0.1) {
         var rounded = Math.round(x * 100) / 100;
         $('#categoryMinimumGPA').append($("<option />").val(rounded).text(rounded.toFixed(2)));
@@ -89,12 +110,12 @@
 
     var populateMaximumGPA = function() {
       $('#categoryMaximumGPA').find('option').remove();
-      var minimum = $('#categoryMinimumGPA').val() == '-1' ? 0.0 : (Number($('#categoryMinimumGPA').val()) + 0.1);
+      var minimum = $('#categoryMinimumGPA').val() == '-99' ? 0.0 : (Number($('#categoryMinimumGPA').val()) + 0.1);
       for (var x = minimum; x <= 5.0; x += 0.1) {
         var rounded = Math.round(x * 100) / 100;
         $('#categoryMaximumGPA').append($("<option />").val(rounded).text(rounded.toFixed(2)));
       }
-      $('#categoryMaximumGPA').append($("<option />").val('-1').text('> 5.00'));
+      $('#categoryMaximumGPA').append($("<option />").val('99').text('> 5.00'));
     };
 
     $('#categoryMinimumGPA').change(populateMaximumGPA);
@@ -127,9 +148,9 @@
           description: $('#categoryDescription').val(),
           minimumGPA: $('#categoryMinimumGPA').val(),
           maximumGPA: $('#categoryMaximumGPA').val(),
-          studyHoursRequired: ($('#categoryStudyHoursRequired').attr('checked') ? 'true' : 'false'),
+          studyHoursRequired: ($('#categoryStudyHoursRequired').is(':checked') ? 'true' : 'false'),
           minimumStudyHours: $('#categoryMinimumStudyHours').val(),
-          reportsRequired: ($('#categoryReportsRequired').attr('checked') ? 'true' : 'false'),
+          reportsRequired: ($('#categoryReportsRequired').is(':checked') ? 'true' : 'false'),
           reportFrequency: $('#categoryReportFrequency').val()
         }),
         success: function(data) {
@@ -155,19 +176,15 @@
 
 <div class="card">
   <div class="cardContents">
-    <div class="cardTitle">EMAIL</div>
-    ORGANIZATION EMAIL<br>
-    <input id="emailUsername" type="text" value="<%= organization.emailUsername %>"><br>
+    <div class="cardTitle">TOOLS</div>
+    WARNING: Enabling/disabling these tools enables/disables them for all of your users.<br>
     <br>
-    <br>
-    ORGANIZATION EMAIL PASSWORD<br>
-    <input id="emailPassword" type="password" value="<%= organization.emailPassword %>"><br>
-    <br>
-    <br>
-    <a href="https://www.google.com/settings/security/lesssecureapps" target="_blank">Enable emailing on gmail</a>
-    <br>
-    <br>
-    <button id="organizationSubmit">Submit</button> <button id="sendTestMail">Send test email to <%= user.email %></button>
+    <label><input type="checkbox" checked disabled>ACADEMIC CATEGORIES</label><br>
+    <label><input type="checkbox" checked disabled>ACADEMIC REPORTS</label><br>
+    <label><input type="checkbox" checked disabled>EMAIL ALERTS</label><br>
+    <label><input type="checkbox" checked disabled>GRADE TRACKER</label><br>
+    <label><input type="checkbox" checked disabled>LIBRARY</label><br>
+    <label><input type="checkbox" checked disabled>STUDY HOURS</label><br>
   </div>
 </div>
 
@@ -239,6 +256,24 @@
   </select> WEEK(S)<br>
   <br>
   <button id="newCategorySubmit">SUBMIT</button>
+</div>
+
+<div class="card">
+  <div class="cardContents">
+    <div class="cardTitle">EMAIL</div>
+    ORGANIZATION EMAIL<br>
+    <input id="emailUsername" type="text" value="<%= organization.emailUsername %>"><br>
+    <br>
+    <br>
+    ORGANIZATION EMAIL PASSWORD<br>
+    <input id="emailPassword" type="password" value="<%= organization.emailPassword %>"><br>
+    <br>
+    <br>
+    <a href="https://www.google.com/settings/security/lesssecureapps" target="_blank">Enable emailing on gmail</a>
+    <br>
+    <br>
+    <button id="organizationSubmit">Submit</button> <button id="sendTestMail">Send test email to <%= user.email %></button>
+  </div>
 </div>
 <% } else { %>
 COMING SOON

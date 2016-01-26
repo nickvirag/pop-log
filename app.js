@@ -145,7 +145,11 @@ app.get('/api/getActiveUsers', ensureAuthenticatedAndUserAndAdmin, api.getActive
 
 app.get('/api/getCategories', ensureAuthenticatedAndUserAndAdmin, api.getCategories);
 
-app.post('/api/postNewCategory', ensureAuthenticatedAndUserAndAdmin, api.postNewCategory);
+app.post('/api/postNewCategory', ensureAdmin, api.postNewCategory);
+
+app.post('/api/dropCategory', ensureAdmin, api.dropCategory);
+
+app.post('/api/postUserGPA', ensureAdmin, api.postUserGPA);
 
 app.get('/api/getActiveUsersByTrimester', ensureAuthenticatedAndUserAndAdmin, api.getActiveUsersByTrimester);
 

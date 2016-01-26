@@ -41,7 +41,7 @@
           user: '<%= user._id %>',
           organization: '<%= user.organization %>',
           users: $('#orgUsers').val(),
-          sendInvites: ($('#orgEmail').attr('checked') ? 'true' : 'false')
+          sendInvites: ($('#orgEmail').is(':checked') ? 'true' : 'false')
         }),
         success: function(data) {
           $('#addUserDialog').dialog('close');
@@ -60,13 +60,37 @@
           organization: '<%= user.organization %>'
         },
         success: function(data) {
-          invitedUsersTable.clear();
+          invitedUsersTable.clear().draw();
           data.forEach(function(invitedUser) {
             invitedUsersTable.row.add([
               invitedUser.email,
               invitedUser.status
-            ]).draw( false );
+            ]).draw(false);
           });
+        }
+      });
+    };
+
+    var updateUserGPA = function() {
+      var self = this;
+      var jsonData = {
+        user: $(self).data('user'),
+        organization: '<%= user.organization %>',
+        reportedGPA: $(self).val()
+      };
+      if ($(self).data('semester')) {
+        jsonData.semester = $(self).data('semester');
+      } else if ($(self).data('container') && $(self).data('year')) {
+        jsonData.semesterContainer = $(self).data('container');
+        jsonData.year = $(self).data('year');
+      }
+      $.ajax({
+        url: '/api/postUserGPA',
+        method: 'POST',
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify(jsonData),
+        success: function(data) {
+          getActiveUsersByTrimester();
         }
       });
     };
@@ -84,14 +108,21 @@
         },
         success: function(data) {
           activeUsersTable.clear().draw();
+          var gpaData = '';
           data.forEach(function(user) {
+            if (user.isRegistered) {
+              gpaData = 'data-semester="' + user.semester + '"';
+            } else {
+              gpaData = 'data-container="' + $('#activeUsersTrimester').val() + '" data-year="' + $('#activeUsersYear').val() + '"';
+            }
             activeUsersTable.row.add([
-              user.displayName,
+              user.isRegistered ? user.displayName : '<b>' + user.displayName + '</b>',
               user.email,
-              '',
+              '<input id="updateGPA_' + user.id + '" type="text" value="' + (user.reportedGPA ? user.reportedGPA.toFixed(2) : '') + '" data-user="' + user.id + '" ' + gpaData + '>',
               '',
               ''
             ]).draw(false);
+            $('#updateGPA_' + user.id).change(updateUserGPA);
           });
         }
       });
@@ -100,6 +131,7 @@
     $('#submitActiveUsers').click(function() {
       getActiveUsersByTrimester();
     });
+
     getActiveUsersByTrimester();
     getInvitedUsers();
   });

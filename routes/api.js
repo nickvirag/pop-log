@@ -184,18 +184,28 @@ exports.getActiveUsersByTrimester = function(req, res) {
                           throw e;
                         }
                       }
+                      var userObject = {
+                        displayName: user.displayName,
+                        email: user.email,
+                        id: user.id
+                      };
                       if (matchedSemester) {
-                        response(null, {
-                          displayName: user.displayName,
-                          email: user.email,
-                          isRegistered: true
+                        builder.getCategoryFromSemester({semester: matchedSemester.id}, function(err, category) {
+                          console.log('category: ' + err + '...' + category);
+                          userObject.isRegistered = true;
+                          userObject.categoryLabel = category.label;
+                          userObject.categoryID = category.id;
+                          userObject.reportedGPA = matchedSemester.reportedGPA;
+                          userObject.semester = matchedSemester.id;
+                          response(null, userObject);
                         });
                       } else {
-                        response(null, {
-                          displayName: user.displayName,
-                          email: user.email,
-                          isRegistered: false
-                        });
+                        userObject.isRegistered = false;
+                        userObject.categoryLabel = null;
+                        userObject.categoryID = null;
+                        userObject.reportedGPA = null;
+                        userObject.semester = null;
+                        response(null, userObject);
                       }
                     } else {
                       res.send('error');
@@ -215,6 +225,49 @@ exports.getActiveUsersByTrimester = function(req, res) {
         res.send('error');
       }
     });
+  } else {
+    res.send('error');
+  }
+}
+
+exports.postUserGPA = function(req, res) {
+  var data = req.body;
+  if (data.reportedGPA) {
+    var reportedGPA;
+    if (data.reportedGPA > 99) {
+      reportedGPA = 99;
+    } else if (data.reportedGPA < -99) {
+      reportedGPA = -99;
+    } else {
+      reportedGPA = data.reportedGPA;
+    }
+    if (data.semester) {
+      Semester.findById(data.semester, function(err, semester) {
+        if (!err && semester) {
+          semester.reportedGPA = reportedGPA;
+          semester.updatedAt = builder.currentEpochTime();
+          semester.save(function(err) {
+            res.send(semester);
+          });
+        } else {
+          res.send('error');
+        }
+      });
+    } else if (data.semesterContainer && data.year) {
+      builder.createSemester(data, function(err, semester) {
+        if (!err && semester) {
+          semester.reportedGPA = reportedGPA;
+          semester.updatedAt = builder.currentEpochTime();
+          semester.save(function(err) {
+            res.send(semester);
+          });
+        } else {
+          res.send('error');
+        }
+      });
+    } else {
+      res.send('error');
+    }
   } else {
     res.send('error');
   }
@@ -375,28 +428,12 @@ exports.postNewHelpInstance = function(req, res) {
       classInstance: (data.classInstance || ''),
       users: users
     }).exec(function(err, helpInstances) {
-      var helpInstance = null;
-      // if (!err && helpInstances) {
-      //   var timeDistance = Number.MAX_SAFE_INTEGER;
-      //   helpInstances.forEach(function(readHelpInstance) {
-      //     if (readHelpInstance.dueDate) {
-      //       var differenceTravel = readHelpInstance.dueDate - data.completedDate;
-      //       var seconds = Math.floor((differenceTravel) / (1000));
-      //       if (distanceTravel >= 0 && distanceTravel <= 604800 && differenceTravel < timeDistance) {
-      //         helpInstance = readHelpInstance;
-      //         timeDistance = differenceTravel;
-      //       }
-      //     }
-      //   });
-      // }
-      // if (helpInstance === null) {
-        helpInstance = new HelpInstance({
-          users: users
-        });
-        if (data.classInstance && data.classInstance != '') {
-          helpInstance.classInstance = data.classInstance;
-        }
-      // }
+      var helpInstance = helpInstance = new HelpInstance({
+        users: users
+      });
+      if (data.classInstance && data.classInstance != '') {
+        helpInstance.classInstance = data.classInstance;
+      }
       helpInstance.helpType = data.helpType;
       builder.arrayToObjects(User, users, function(err, usersObject) {
         usersObject.forEach(function(user) {
@@ -425,32 +462,8 @@ exports.postNewHelpInstance = function(req, res) {
 exports.postNewSemester = function(req, res) {
   var data = req.body;
   if (data.semesterContainer && data.year) {
-    SemesterContainer.findById(data.semesterContainer, function(err, semesterContainer) {
-      Semester.findOne({
-        user: data.user,
-        semesterContainer: semesterContainer.id,
-        year: data.year
-      }).exec(function(err, semester) {
-        if (!err && semester) {
-          res.send('error');
-        } else {
-          var semester = new Semester({
-            user: data.user,
-            trimesterLabel: semesterContainer.label,
-            year: data.year,
-            semesterContainer: semesterContainer.id
-          });
-          semester.save(function(err) {
-            req.user.semesters.unshift(semester.id);
-            req.user.updatedAt = builder.currentEpochTime();
-            req.user.save();
-            semesterContainer.semesters.unshift(semester.id);
-            semesterContainer.updatedAt = builder.currentEpochTime();
-            semesterContainer.save();
-            res.send(semester);
-          });
-        }
-      });
+    builder.createSemester(data, function(err, semester) {
+      res.send(semester);
     });
   } else {
     res.send('error');
@@ -616,7 +629,7 @@ exports.postNewCategory = function(req, res) {
             category.minimumStudyHours = data.minimumStudyHours;
           }
           if (data.studyHoursRequired) {
-            category.studyHoursRequired = data.minimumStudyHours == 'true';
+            category.studyHoursRequired = data.studyHoursRequired == 'true';
           }
           if (data.reportsRequired) {
             category.reportsRequired = data.reportsRequired == 'true';
@@ -628,6 +641,29 @@ exports.postNewCategory = function(req, res) {
             organization.categories.unshift(category.id);
             organization.updatedAt = builder.currentEpochTime();
             organization.save();
+            res.send(category);
+          });
+        } else {
+          res.send('error');
+        }
+      });
+    } else {
+      res.send('error');
+    }
+  } else {
+    res.send('error');
+  }
+};
+
+exports.dropCategory = function(req, res) {
+  var data = req.body;
+  if (data.organization && data.category) {
+    if (req.user.organization == data.organization) {
+      Category.findById(data.category, function(err, category) {
+        if (!err && category) {
+          category.isActive = false;
+          category.updatedAt = builder.currentEpochTime();
+          category.save(function(err) {
             res.send(category);
           });
         } else {
