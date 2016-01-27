@@ -91,6 +91,23 @@ exports.getSemesters = function(req, res) {
   });
 };
 
+exports.setSelectedSemester = function(req, res) {
+  var data = req.body;
+  if (data.semester) {
+    if (data.semester != req.user.selectedSemester) {
+      req.user.selectedSemester = data.semester;
+      req.user.updatedAt = builder.currentEpochTime();
+      req.user.save(function(err) {
+        res.send(req.user);
+      });
+    } else {
+      res.send(req.user);
+    }
+  } else {
+    res.send('error');
+  }
+}
+
 exports.updateSettings = function(req, res) {
   var data = req.body;
   Organization.findById(req.user.organization, function(err, organization) {

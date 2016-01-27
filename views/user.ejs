@@ -50,6 +50,17 @@
           $('#newClassSemester').val($('#semesterSelector').val());
           $('#newClassTrimester').text(data.trimesterLabel);
           $('#newClassYear').text(data.year);
+          $('#semesterCumulativeGPA').text(data.cumulativeGPA != 0 ? data.cumulativeGPA : '---');
+          $.ajax({
+            url: '/api/setSelectedSemester',
+            method: 'POST',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify({
+              user: '<%= user._id %>',
+              semester: data.id
+            }),
+            success: function(data) {}
+          });
           semesterTable.clear().draw();
           classes = data.classes;
           classes.forEach(function(fClass) {
@@ -118,6 +129,9 @@
             });
             $('#newSemesterButton').click();
           }
+          <% if (user.selectedSemester) { %>
+          $('#semesterSelector').val('<%= user.selectedSemester %>');
+          <% } %>
           $('#semesterSelector').change();
         }
       });
@@ -340,11 +354,30 @@
   });
 </script>
 <div class="details">
-<select name="semester" id="semesterSelector"></select>&nbsp;&nbsp;&nbsp;<button id="newSemesterButton">+</button><br>
-<br>
-<%= isNotUser ? user.displayName.toUpperCase() + '\'S ' : '' %>OFFICIAL GPA: ---<br>
-<%= isNotUser ? user.displayName.toUpperCase() + '\'S ' : '' %>SEMESTER GPA: ---<br>
-HOURS THIS WEEK: <span id="hoursLogged">0</span>
+  <select name="semester" id="semesterSelector"></select>&nbsp;&nbsp;&nbsp;<button id="newSemesterButton">+</button><br>
+  <br>
+  <table id="userStats">
+    <thead>
+      <tr>
+        <th></th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><%= isNotUser ? user.displayName.toUpperCase() + '\'S ' : '' %>CUMULATIVE GPA</td>
+        <td><span id="semesterCumulativeGPA">---</span></td>
+      </tr>
+      <tr>
+        <td><%= isNotUser ? user.displayName.toUpperCase() + '\'S ' : '' %>SEMESTER GPA</td>
+        <td><span id="semesterCalculatedGPA">---</span></td>
+      </tr>
+      <tr>
+        <td>HOURS THIS WEEK</td>
+        <td><span id="hoursLogged">0</span></td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 <div class="mainContents">
   <div class="card">
@@ -432,7 +465,7 @@ HOURS THIS WEEK: <span id="hoursLogged">0</span>
 </div>
 
 <div id="userClassDialog" title="HELP">
-  COMING SOON!<br>
+  COMING SOON<br>
   <div id="helpClassUsers"></div>
 </div>
 

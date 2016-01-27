@@ -22,6 +22,10 @@ var userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  selectedSemester: {
+    type: String,
+    default: null
+  },
   organization: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Organization',

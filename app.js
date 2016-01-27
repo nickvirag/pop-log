@@ -131,6 +131,8 @@ app.post('/api/joinOrganization', ensureAuthenticatedAndUser, api.joinOrganizati
 
 app.post('/api/postNewSemester', ensureAuthenticatedAndUser, api.postNewSemester);
 
+app.post('/api/setSelectedSemester', ensureAuthenticatedAndUser, api.setSelectedSemester);
+
 app.put('/api/updateSettings', ensureAdmin, api.updateSettings);
 
 app.get('/api/getClassHelp', ensureAuthenticatedAndUser, api.getClassHelp);

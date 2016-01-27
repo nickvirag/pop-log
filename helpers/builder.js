@@ -144,6 +144,7 @@ exports.getJSONSemester = function(user, data, callback) {
                       trimesterLabel: semester.trimesterLabel,
                       year: semester.year,
                       id: semester.id,
+                      cumulativeGPA: semester.reportedGPA,
                       classes: obj
                     });
                   });
