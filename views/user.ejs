@@ -118,7 +118,7 @@
         success: function(data) {
           $("#semesterSelector").html('');
           data.forEach(function(semester) {
-            $("#semesterSelector").append($("<option />").val(semester.id).text(semester.trimesterLabel + ' ' + semester.year));
+            $('#semesterSelector').append($('<option />').val(semester.id).text(semester.trimesterLabel + ' ' + semester.year));
             if (selectedTrimester == semester.trimester && selectedYear == semester.year) {
               $('#semesterSelector option[value=' + semester.id + ']').prop('selected', 'selected');
             }
@@ -188,7 +188,7 @@
     });
 
     $('#logHoursButton').click(function(event) {
-      $("#logHoursClass").html('');
+      $('#logHoursClass').html('');
       classes.forEach(function(fClass) {
         $("#logHoursClass").append($("<option />").val(fClass.id).text(fClass.classCode + ' ' + fClass.classIdentifier));
       });

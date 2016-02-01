@@ -16,6 +16,7 @@ var logs = require('./routes/logs');
 var fClass = require('./routes/class');
 var admin = require('./routes/admin');
 var join = require('./routes/join');
+var report = require('./routes/report');
 var organization = require('./routes/organization');
 
 var prefs = require('./helpers/prefs');
@@ -120,6 +121,7 @@ app.get('/join', ensureAuthenticated, join.get);
 app.get('/settings', ensureAuthenticated, settings.get);
 
 app.get('/library', ensureAuthenticated, library.get);
+app.get('/report', ensureAuthenticated, report.get);
 
 app.post('/api/newClassInstance', ensureAuthenticated, api.postNewClassInstance);
 app.put('/api/updateClassInstance', ensureAuthenticated, api.updateClassInstance);
@@ -152,6 +154,12 @@ app.post('/api/postNewCategory', ensureAdmin, api.postNewCategory);
 app.post('/api/dropCategory', ensureAdmin, api.dropCategory);
 
 app.post('/api/postUserGPA', ensureAdmin, api.postUserGPA);
+
+app.post('/api/setReportFields', ensureAdmin, api.setReportFields);
+
+app.post('/api/addReportField', ensureAdmin, api.addReportField);
+
+app.get('/api/getReportFields', ensureAuthenticated, api.getReportFields);
 
 app.get('/api/getActiveUsersByTrimester', ensureAuthenticatedAndUserAndAdmin, api.getActiveUsersByTrimester);
 

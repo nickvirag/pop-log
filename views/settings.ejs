@@ -14,6 +14,11 @@
       autoOpen: false
     });
 
+    $('#newReportSectionDialog').dialog({
+      modal: true,
+      autoOpen: false
+    });
+
     $('#organizationSubmit').click(function() {
       $.ajax({
         url: '/api/updateSettings',
@@ -44,6 +49,25 @@
         }
       });
     });
+
+    var getReportFields = function() {
+      $.ajax({
+        url: '/api/getReportFields',
+        method: 'GET',
+        contentType: 'application/json; charset=utf-8',
+        data: {
+          user: '<%= user._id %>',
+          organization: '<%= user.organization %>'
+        },
+        success: function(data) {
+          $('#reportFields').html('');
+          data.forEach(function(reportField, index) {
+            $('#reportFields').append($('<li />').html(reportField + ' <a id="removeReportField_' + index + '" href="#" data-index="' + index + '">REMOVE</a>'));
+            $('#removeReportField_' + index).click(deleteReportFieldClick);
+          });
+        }
+      });
+    };
 
     var getCategories = function() {
       $.ajax({
@@ -109,6 +133,26 @@
       event.stopPropagation();
     };
 
+    var deleteReportFieldClick = function(event) {
+      var self = this;
+      $.ajax({
+        url: '/api/deleteField',
+        method: 'POST',
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify({
+          user: '<%= user._id %>',
+          organization: '<%= user.organization %>',
+          reportField: $('#removeReportField').data('index')
+        }),
+        success: function(data) {
+          getCategories();
+        }
+      });
+
+      event.preventDefault();
+      event.stopPropagation();
+    };
+
     $('#newCategoryButton').click(function() {
       $('#categoryLabel').val('');
       $('#categoryDescription').val('');
@@ -118,6 +162,11 @@
       $('#categoryReportsRequired').change();
       newCategoryValidation();
       $('#newCategoryDialog').dialog('open');
+    });
+
+    $('#addFieldButton').click(function() {
+      $('#newReportSectionText').val('');
+      $('#newReportSectionDialog').dialog('open');
     });
 
     var populateMinimumGPA = function() {
@@ -196,6 +245,23 @@
       });
     });
 
+    $('#newReportSectionSubmit').click(function() {
+      $.ajax({
+        url: '/api/addReportField',
+        method: 'POST',
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify({
+          user: '<%= user._id %>',
+          organization: '<%= user.organization %>',
+          reportField: $('#newReportSectionText').val()
+        }),
+        success: function(data) {
+          $('#newReportSectionDialog').dialog('close');
+          getReportFields();
+        }
+      });
+    });
+
     var newCategoryValidation = function() {
       if ($('#categoryLabel').val()) {
         $('#newCategorySubmit').prop('disabled', false);
@@ -206,7 +272,11 @@
 
     $('#categoryLabel').on('keyup', newCategoryValidation);
 
+    $('#reportFields').sortable();
+    $('#reportFields').disableSelection();
+
     getCategories();
+    getReportFields();
   });
 </script>
 
@@ -244,6 +314,40 @@
     </div>
     <button id="newCategoryButton" class="floatingActionButton">+</button>
   </div>
+</div>
+
+<div class="card">
+  <div class="cardContents">
+    <div class="cardTitle">EMAIL</div>
+    ORGANIZATION EMAIL<br>
+    <input id="emailUsername" type="text" value="<%= organization.emailUsername %>"><br>
+    <br>
+    <br>
+    ORGANIZATION EMAIL PASSWORD<br>
+    <input id="emailPassword" type="password" value="<%= organization.emailPassword %>"><br>
+    <br>
+    <br>
+    <a href="https://www.google.com/settings/security/lesssecureapps" target="_blank">Enable emailing on gmail</a>
+    <br>
+    <br>
+    <button id="organizationSubmit">Submit</button> <button id="sendTestMail">Send test email to <%= user.email %></button>
+  </div>
+</div>
+
+<div class="card">
+  <div class="cardContents">
+    <div class="cardTitle">ACADEMIC REPORT</div>
+    <div class="fabLeft">
+      <ul id="reportFields"></ul>
+    </div>
+    <button id="addFieldButton" class="floatingActionButton">+</button>
+  </div>
+</div>
+
+<div id="newReportSectionDialog" title="NEW REPORT SECTION">
+  <input id="newReportSectionText" placeholder="Section title"><br>
+  <br>
+  <button id="newReportSectionSubmit">SUBMIT</button>
 </div>
 
 <div id="newCategoryDialog" title="NEW CATEGORY">
@@ -294,29 +398,13 @@
   <button id="newCategorySubmit">SUBMIT</button>
 </div>
 
+<% } else { %>
+
 <div class="card">
   <div class="cardContents">
-    <div class="cardTitle">EMAIL</div>
-    ORGANIZATION EMAIL<br>
-    <input id="emailUsername" type="text" value="<%= organization.emailUsername %>"><br>
-    <br>
-    <br>
-    ORGANIZATION EMAIL PASSWORD<br>
-    <input id="emailPassword" type="password" value="<%= organization.emailPassword %>"><br>
-    <br>
-    <br>
-    <a href="https://www.google.com/settings/security/lesssecureapps" target="_blank">Enable emailing on gmail</a>
-    <br>
-    <br>
-    <button id="organizationSubmit">Submit</button> <button id="sendTestMail">Send test email to <%= user.email %></button>
+    <div class="cardTitle">SETTINGS</div>
+    COMING SOON
   </div>
 </div>
-<% } else { %>
-  <div class="card">
-    <div class="cardContents">
-      <div class="cardTitle">SETTINGS</div>
-      COMING SOON
-    </div>
-  </div>
-</div>
+
 <% } %>

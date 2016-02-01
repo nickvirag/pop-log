@@ -720,7 +720,72 @@ exports.getCategories = function(req, res) {
   } else {
     res.send('error');
   }
-}
+};
+
+exports.addReportField = function(req, res) {
+  var data = req.body;
+  if (data.organization && data.reportField) {
+    if (req.user.organization == data.organization) {
+      Organization.findById(data.organization, function(err, organization) {
+        if (!err && organization) {
+          organization.reportFields.push(data.reportField);
+          organization.updatedAt = builder.currentEpochTime();
+          organization.save(function(err) {
+            res.send(organization);
+          });
+        } else {
+          res.send('error');
+        }
+      });
+    } else {
+      res.send('error');
+    }
+  } else {
+    res.send('error');
+  }
+};
+
+exports.setReportFields = function(req, res) {
+  var data = req.body;
+  if (data.organization && data.reportFields) {
+    if (req.user.organization == data.organization) {
+      Organization.findById(data.organization, function(err, organization) {
+        if (!err && organization) {
+          organization.reportFields = data.reportFields;
+          organization.updatedAt = builder.currentEpochTime();
+          organization.save(function(err) {
+            res.send(organization);
+          });
+        } else {
+          res.send('error');
+        }
+      });
+    } else {
+      res.send('error');
+    }
+  } else {
+    res.send('error');
+  }
+};
+
+exports.getReportFields = function(req, res) {
+  var data = req.query;
+  if (data.organization) {
+    if (req.user.organization == data.organization) {
+      Organization.findById(data.organization, function(err, organization) {
+        if (!err && organization) {
+          res.send(organization.reportFields);
+        } else {
+          res.send('error');
+        }
+      });
+    } else {
+      res.send('error');
+    }
+  } else {
+    res.send('error');
+  }
+};
 
 exports.inviteUsers = function(req, res) {
   var data = req.body;
