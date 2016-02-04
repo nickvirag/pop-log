@@ -64,15 +64,19 @@ table {
 }
 #content a:link {
   color: black;
+  text-decoration: none;
 }
 #content a:visited {
   color: black;
+  text-decoration: none;
 }
 #content a:hover {
   color: black;
+  text-decoration: underline;;
 }
 #content a:active {
   color: black;
+  text-decoration: none;
 }
 .dataTables_empty {
   display: none;
@@ -80,6 +84,22 @@ table {
 .details {
   width: 25%;
   float: left;
+}
+.reports {
+  text-align: center;
+  padding-bottom: 40px;
+}
+.submitButton {
+  background-color: #F44336;
+  border: none;
+  outline: none;
+  color: white;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+  padding: 10px;
+  font-size: 1em;
+}
+.submitButton:disabled {
+  background-color: grey;
 }
 .mainContents {
   width: 75%;

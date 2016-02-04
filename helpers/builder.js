@@ -44,12 +44,153 @@ exports.sort_by = function(field, reverse, primer) {
   var key = function(x) {
     return primer ? primer(x[field]) : x[field];
   };
-
   var reverseInt = !reverse ? 1 : -1;
-
   return function (a, b) {
     return a = key(a), b = key(b), reverseInt * ((a > b) - (b > a));
   };
+};
+
+exports.currentUserSemester = function(data, callback) {
+  if (data.user) {
+    User.findById(data.user, function(err, user) {
+      if (!err && user) {
+        Organization.findById(user.organization, function(err, organization) {
+          if (!err && organization) {
+            exports.arrayToObjects(SemesterContainer, organization.semesterContainers, function(err, semesterContainers) {
+              var today = new Date();
+              var minDate = new Date();
+              var maxDate = new Date();
+              var currentSCs = [];
+              var currentSCObjects = [];
+              semesterContainers.forEach(function(semesterContainer) {
+                minDate.setMonth(semesterContainer.startMonth - 1);
+                minDate.setDate(semesterContainer.startDay);
+                maxDate.setMonth(semesterContainer.endMonth - 1);
+                maxDate.setDate(semesterContainer.endDay);
+                if (minDate <= today && today <= maxDate) {
+                  currentSCs.unshift(semesterContainer.id);
+                  currentSCObjects.unshift(semesterContainer);
+                }
+              });
+              exports.arrayToObjects(Semester, user.semesters, function(err, semesters) {
+                var currentSemester = null;
+                var currentSC = {};
+                var semesterFound = {};
+                var year = today.getFullYear();
+                try {
+                  semesters.forEach(function(semester) {
+                    var container = semester.semesterContainer;
+                    for (var index = 0; index < currentSCs.length; index ++) {
+                      if (semester.year == year && String(currentSCs[index]) === String(container)) {
+                        currentSemester = semester;
+                        currentSC = currentSCObjects[index];
+                        throw semesterFound;
+                      }
+                    }
+                  });
+                } catch (e) {
+                  if (e !== semesterFound) {
+                    throw e;
+                  }
+                }
+                callback(currentSemester ? null : 'error', currentSemester, currentSC);
+              });
+            });
+          } else {
+            callback('error', null);
+          }
+        });
+      } else {
+        callback('error', null);
+      }
+    });
+  } else {
+    callback('error', null);
+  }
+};
+
+exports.userReportDetails = function(data, callback) {
+  if (data.user && data.organization) {
+    User.findById(data.user, function(err, user) {
+      if (!err && user) {
+        exports.currentUserSemester({user: user.id}, function(err, semester, semesterContainer) {
+          if (!err && semester && semesterContainer) {
+            exports.getCategoryFromSemester({semester: semester.id}, function(err, category) {
+              if (!err && category) {
+                var today = new Date();
+                var startDate = new Date();
+                var endDate = new Date();
+
+                startDate.setMonth(semesterContainer.startMonth - 1);
+                startDate.setDate(semesterContainer.startDay);
+                startDate.setHours(0, 0, 0, 0);
+                endDate.setMonth(semesterContainer.endMonth - 1);
+                endDate.setDate(semesterContainer.endDay);
+                endDate.setHours(23, 59, 59, 999);
+
+                var saturdays = [];
+                var saturday = startDate;
+
+                saturday.setDate(saturday.getDate() - saturday.getDay() + 6);
+                saturday.setHours(23, 59, 59, 999);
+
+                for(; saturday < endDate; saturday.setDate(saturday.getDate() + 7)) {
+                  saturdays.push(new Date(saturday));
+                }
+
+                var reportDueDates = [];
+                var isNextReport = false;
+
+                var addToReport = function(reportDueDate) {
+                  var days = Math.round((today.getTime() - reportDueDate.getTime()) / 86400000);
+                  var submitted = false;
+                  var submittable = Math.abs(days) <= 7 && !submitted;
+                  if (submittable || isNextReport) {
+                    reportDueDates.push({
+                      dueDate: dateFormat(reportDueDate, 'mmm d'),
+                      submittable: submittable,
+                      overdue: days > 0 && !submitted,
+                      index: reportDueDates.length,
+                      frequency: category.reportFrequency,
+                      isNextReport: isNextReport
+                    });
+                  }
+                  isNextReport = !isNextReport && submitted;
+                };
+
+                if (category.reportFrequency == 0) {
+                  saturdays.forEach(function(day) {
+                    addToReport(day);
+                  });
+                } else if (category.reportFrequency == 1) {
+                  saturdays.forEach(function(day, index) {
+                    if (index % 2 == 1) {
+                      addToReport(day);
+                    }
+                  });
+                } else if (category.reportFrequency == 2) {
+
+                } else if (category.reportFrequency == 3) {
+                  addToReport(saturdays[Math.floor(saturdays.length / 2)]);
+                } else if (category.reportFrequency == 4) {
+                  addToReport(saturdays[saturdays.length - 1]);
+                }
+                callback(null, reportDueDates);
+              } else {
+                callback('error', null);
+              }
+            });
+          } else {
+            callback('error', null);
+          }
+        });
+      } else {
+        callback('error', null);
+      }
+    });
+  } else {
+    callback('error', null);
+  }
 };
 
 exports.currentEpochTime = function() {
@@ -114,42 +255,50 @@ exports.getJSONSemester = function(user, data, callback) {
         if (!err && user) {
           Semester.findById(data.semester, function(err, semester) {
             if (!err && semester) {
-              exports.arrayToObjects(ClassInstance, semester.classInstances, function(err, classInstances) {
-                var calls = [];
-                classInstances.forEach(function(classInstance) {
-                  if (classInstance.isEnrolled) {
-                    calls.push(function(response) {
-                      Class.findById(classInstance.class, function(err, fClass) {
-                        response(err, {
-                          grade: classInstance.grade,
-                          isEnrolled: classInstance.isEnrolled,
-                          classCode: (fClass.classCode || '   '),
-                          classIdentifier: (fClass.classIdentifier || 000),
-                          id: classInstance._id
+              exports.userReportDetails({
+                user: user.id,
+                organization: user.organization
+              }, function(errReport, reportDetails) {
+                exports.arrayToObjects(ClassInstance, semester.classInstances, function(err, classInstances) {
+                  var calls = [];
+                  classInstances.forEach(function(classInstance) {
+                    if (classInstance.isEnrolled) {
+                      calls.push(function(response) {
+                        Class.findById(classInstance.class, function(err, fClass) {
+                          response(err, {
+                            grade: classInstance.grade,
+                            isEnrolled: classInstance.isEnrolled,
+                            classCode: (fClass.classCode || '   '),
+                            classIdentifier: (fClass.classIdentifier || 000),
+                            id: classInstance._id
+                          });
                         });
                       });
-                    });
-                  }
-                });
-                prefs.getTrimesterOptions(user.organization, function(err, trimesterOptions) {
-                  async.series(calls, function(err, obj) {
-                    var tOption = {};
-                    trimesterOptions.forEach(function(trimesterOption) {
-                      if (semester.trimester == trimesterOption.id) {
-                        tOption = trimesterOption;
-                      }
-                    });
-                    callback(err, {
-                      semesterContainer: semester.semesterContainer,
-                      trimesterLabel: semester.trimesterLabel,
-                      year: semester.year,
-                      id: semester.id,
-                      cumulativeGPA: semester.reportedGPA,
-                      classes: obj
+                    }
+                  });
+                  prefs.getTrimesterOptions(user.organization, function(err, trimesterOptions) {
+                    async.series(calls, function(err, obj) {
+                      var tOption = {};
+                      trimesterOptions.forEach(function(trimesterOption) {
+                        if (semester.trimester == trimesterOption.id) {
+                          tOption = trimesterOption;
+                        }
+                      });
+                      callback(err, {
+                        semesterContainer: semester.semesterContainer,
+                        trimesterLabel: semester.trimesterLabel,
+                        year: semester.year,
+                        id: semester.id,
+                        cumulativeGPA: semester.reportedGPA,
+                        reportDates: reportDetails,
+                        classes: obj
+                      });
                     });
                   });
                 });
               });
+            } else {
+              callback('error', {});
             }
           });
         } else {
@@ -168,7 +317,6 @@ exports.getCategoryFromSemester = function(data, callback) {
   if (data.semester) {
     Semester.findById(data.semester, function(err, semester) {
       if (!err && semester) {
-        console.log(semester.organization);
         Organization.findById(semester.organization, function(err, organization) {
           if (!err && organization) {
             exports.arrayToObjects(Category, organization.categories, function(err, categories) {
@@ -177,7 +325,7 @@ exports.getCategoryFromSemester = function(data, callback) {
                 var categoryFound = {};
                 try {
                   categories.forEach(function(category) {
-                    if (category.isActive && category.minimumGPA <= semester.reportedGPA && semester.reportedGPA >= category.maximumGPA) {
+                    if (category.isActive && category.minimumGPA <= semester.reportedGPA && semester.reportedGPA <= category.maximumGPA) {
                       semesterCategory = category;
                       throw categoryFound;
                     }
@@ -187,21 +335,25 @@ exports.getCategoryFromSemester = function(data, callback) {
                     throw e;
                   }
                 }
-                callback(null, categoryFound);
+                if (semesterCategory != {}) {
+                  callback(null, semesterCategory);
+                } else {
+                  callback('error', null);
+                }
               } else {
-                callback('categories error', null);
+                callback('error', null);
               }
             });
           } else {
-            callback('org error ' + err, null);
+            callback('error', null);
           }
         });
       } else {
-        callback('semester error', null);
+        callback('error', null);
       }
     });
   } else {
-    callback('input error', null);
+    callback('error', null);
   }
 }
 
@@ -253,6 +405,6 @@ exports.getJSONLogs = function(data, callback) {
       }
     });
   } else {
-    callback('missing parameters error', null);
+    callback('error', null);
   }
 }

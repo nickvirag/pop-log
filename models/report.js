@@ -11,6 +11,8 @@ var reportSchema = new mongoose.Schema({
   },
   fieldLabels: [String],
   fields: [String],
+  index: Number,
+  reportFrequency: Number,
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'

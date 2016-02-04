@@ -115,19 +115,19 @@ exports.getReportFrequencies = function() {
   return [
     {
       index: 0,
-      label: 'EVERY WEEK'
+      label: 'Every week'
     }, {
       index: 1,
-      label: 'EVERY TWO WEEKS'
+      label: 'Every two weeks'
     }, {
       index: 2,
-      label: 'END OF MONTH'
+      label: 'End of each month'
     }, {
       index: 3,
-      label: 'MID-SEMESTER'
+      label: 'Mid-semester'
     }, {
       index: 4,
-      label: 'END OF SEMESTER'
+      label: 'End of the semester'
     }
   ];
 }

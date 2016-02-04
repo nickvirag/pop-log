@@ -208,7 +208,6 @@ exports.getActiveUsersByTrimester = function(req, res) {
                       };
                       if (matchedSemester) {
                         builder.getCategoryFromSemester({semester: matchedSemester.id}, function(err, category) {
-                          console.log('category: ' + err + '...' + category);
                           userObject.isRegistered = true;
                           userObject.categoryLabel = category.label;
                           userObject.categoryID = category.id;
