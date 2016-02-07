@@ -355,13 +355,16 @@
         }
       });
     });
+    $('#semesterSwitchContainer').appendTo($('.navbar'));
+    $('.navPanelStats').appendTo($('.navbar'));
     getSemesters('', '');
     getLogs();
   });
 </script>
-<div class="details">
-  <select name="semester" id="semesterSelector"></select>&nbsp;&nbsp;&nbsp;<button id="newSemesterButton">+</button><br>
-  <br>
+<div class="navPanelContainer navPanelBase" id="semesterSwitchContainer">
+  <select name="semester" id="semesterSelector"></select>&nbsp;&nbsp;&nbsp;<button id="newSemesterButton">+</button>
+</div>
+<div class="navPanelStats">
   <table id="userStats">
     <thead>
       <tr>
@@ -371,64 +374,55 @@
     </thead>
     <tbody>
       <tr>
-        <td><%= isNotUser ? user.displayName.toUpperCase() + '\'S ' : '' %>CUMULATIVE GPA</td>
+        <td><%= isNotUser ? user.displayName.toUpperCase() + '\'S ' : '' %>CUM GPA</td>
         <td><span id="semesterCumulativeGPA">---</span></td>
       </tr>
       <tr>
-        <td><%= isNotUser ? user.displayName.toUpperCase() + '\'S ' : '' %>SEMESTER GPA</td>
+        <td><%= isNotUser ? user.displayName.toUpperCase() + '\'S ' : '' %>SEM GPA</td>
         <td><span id="semesterCalculatedGPA">---</span></td>
       </tr>
       <tr>
-        <td>HOURS THIS WEEK</td>
-        <td><span id="hoursLogged">0</span></td>
+        <td>HOURS</td>
+        <td><span id="hoursLogged">---</span>/-</td>
       </tr>
     </tbody>
   </table>
 </div>
-<div class="mainContents">
-  <div class="reports"></div>
-  <div class="card">
-    <div class="cardContents">
-      <div class="fabLeft">
-        <div class="cardTitle">CLASSES</div>
-        <table id="semesterClasses">
-          <thead>
-            <tr>
-              <th></th>
-              <th></th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <button id="newClassButton" class="floatingActionButton">+</button>
+<div class="reports"></div>
+<div class="card">
+  <div class="cardContents">
+    <div class="fabLeft">
+      <div class="cardTitle">CLASSES</div>
+      <table id="semesterClasses">
+        <thead>
+          <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
+    <button id="newClassButton" class="floatingActionButton">+</button>
   </div>
-  <div class="card">
-    <div class="cardContents">
-      <div class="fabLeft">
-        <div class="cardTitle">LOGS THIS WEEK</div>
-        <table id="userLogsTable">
-          <thead>
-            <tr>
-              <th></th>
-              <th></th>
-              <th></th>
-              <!--<th>Due Date</th>
-              <th>Class</th>
-              <th>Type</th>
-              <th>Hours</th>
-              <th>Website</th>
-              <th>Description</th>
-              <th>Helping users</th>-->
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-      <button id="logHoursButton" class="floatingActionButton">+</button>
+</div>
+<div class="card">
+  <div class="cardContents">
+    <div class="fabLeft">
+      <div class="cardTitle">LOGS THIS WEEK</div>
+      <table id="userLogsTable">
+        <thead>
+          <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
+    <button id="logHoursButton" class="floatingActionButton">+</button>
   </div>
 </div>
 

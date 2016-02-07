@@ -8,6 +8,8 @@ body {
   padding: 0;
   margin: 0;
   width: 100%;
+  height: 100%;
+  position: absolute;
 }
 table {
   width: 100%;
@@ -16,23 +18,41 @@ table {
   -webkit-box-shadow: inset 0px -135px 4px -134px rgba(0,0,0,0.46);
   -moz-box-shadow: inset 0px -135px 4px -134px rgba(0,0,0,0.46);
   box-shadow: inset 0px -135px 4px -134px rgba(0,0,0,0.46);
-  height: 150px;
+  height: 60px;
+  color: white;
+  background-color: #B71C1C;
+  position: fixed;
+  overflow: auto;
+  width: 100%;
+  z-index: 98;
+}
+#bannerContents {
+  margin: 0 auto 0 auto;
+  top: 50%;
+  position: absolute;
+  transform: translateY(-50%);
+  width: 100%;
+}
+#bannerTitleContainer {
+  -webkit-box-shadow: inset 0px -135px 4px -134px rgba(0,0,0,0.46);
+  -moz-box-shadow: inset 0px -135px 4px -134px rgba(0,0,0,0.46);
+  box-shadow: inset 0px -135px 4px -134px rgba(0,0,0,0.46);
+  height: 60px;
   color: white;
   background-color: #B71C1C;
   position: relative;
   overflow: auto;
 }
-#bannerContents {
-  max-width: 800px;
+#bannerTitleContents {
   margin: 0 auto 0 auto;
   top: 50%;
-  left: 50%;
   position: absolute;
   transform: translateY(-50%);
+  text-align: center;
+  width: 100%;
 }
-#bannerNestedContents {
-  position: relative;
-  left: -50%;
+#bannerTitleNestedContents {
+
 }
 #banner a:link {
   color: white;
@@ -54,29 +74,47 @@ table {
   font-size: 0.85em;
 }
 #bannerTitle {
-  font-size: 3em;
+  font-size: 2em;
   font-family: 'Lobster', cursive;
+}
+.contentContainer {
+  margin-top: 100px;
+  margin-left: 0px;
 }
 #content {
   max-width: 800px;
-  margin: 0 auto 0 auto;
-  padding-top: 40px;
 }
-#content a:link {
+a#content {
   color: black;
   text-decoration: none;
 }
-#content a:visited {
-  color: black;
+.navPanel {
+  height: 60px;
+  text-align: center;
+}
+a.navPanel {
+  color: white;
   text-decoration: none;
 }
-#content a:hover {
-  color: black;
-  text-decoration: underline;;
+.navPanelContainer {
+  background-color: #455A64;
+  width: 160px;
+  padding: 20px;
+  margin-bottom: 1px;
+  text-align: left;
 }
-#content a:active {
-  color: black;
-  text-decoration: none;
+.navPanelStats {
+  background-color: #263238;
+  padding: 10px;
+  margin: 10px;
+  width: 160px;
+  text-align: left;
+  border-radius: 10px;
+  color: white;
+}
+.navPanelBase {
+  position: absolute;
+  bottom: 0;
 }
 .dataTables_empty {
   display: none;
@@ -101,7 +139,7 @@ table {
 .submitButton:disabled {
   background-color: grey;
 }
-.mainContents {
+.mainnavPanels {
   width: 75%;
   float: left;
 }
@@ -150,4 +188,52 @@ table {
   bottom: 0;
   right: 0;
   margin: 40px;
+}
+
+.navbar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 200px;
+  visibility: hidden;
+  background-color: #37474F;
+  height: 100%;
+  margin-right: 40px;
+  z-index: 99;
+}
+
+#menuButton {
+  float: right;
+  visibility: hidden;
+  margin-right: 20px;
+}
+
+.visible {
+  visibility: visible;
+}
+
+@media only screen and (min-width: 768px) {
+  .navbar {
+    visibility: visible;
+  }
+}
+
+@media only screen and (min-width: 768px) and (max-width: 1200px) {
+  .contentContainer {
+    margin-left: 210px;
+    margin-right: 10px;
+  }
+}
+
+@media only screen and (min-width: 1200px) {
+  #content {
+    margin: 0 auto 0 auto;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  #menuButton {
+    visibility: visible;
+  }
 }

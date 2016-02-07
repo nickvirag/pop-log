@@ -379,7 +379,7 @@ exports.getJSONLogs = function(data, callback) {
                 hours: addHelpInstance.helpType == 0 ? addHelpInstance.hours : 0
               };
             } else {
-              return null;
+              return;
             }
           };
           var calls = [];
@@ -397,7 +397,13 @@ exports.getJSONLogs = function(data, callback) {
             });
           });
           async.series(calls, function(err, logs) {
-            callback(null, logs);
+            var retLogs = [];
+            for (var x = 0; x < logs.length; x ++) {
+              if (logs[x]) {
+                retLogs.push(logs[x]);
+              }
+            }
+            callback(null, retLogs);
           });
         });
       } else {

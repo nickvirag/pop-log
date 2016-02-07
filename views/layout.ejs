@@ -9,28 +9,71 @@
 		<script type="text/javascript" charset="utf8" src="/javascripts/jquery-2.1.4.min.js"></script>
 		<script type="text/javascript" charset="utf8" src="/javascripts/jquery.dataTables.min.js"></script>
 		<script type="text/javascript" charset="utf8" src="/javascripts/jquery-ui-1.11.4/jquery-ui.min.js"></script>
-
+		<script>
+		$(function() {
+			$('#menuButton').on('click', function(event) {
+				$('.navbar').toggleClass('visible');
+				event.preventDefault();
+			});
+		});
+		</script>
 	</head>
 	<body>
-		<div id="banner">
-			<div id="bannerContents">
-				<div id="bannerNestedContents">
-					<span id="bannerTitle"><%= process.env.WEB_TITLE || '💩log' %></span>
-					<span id="nav">
-						<% if (user) { %>
-						&nbsp;&nbsp;&nbsp;&nbsp;<a href="/user"><%= user.isAdmin ? 'ADMIN (' + user.email + ')' : user.displayName.toUpperCase() %></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="/library">LIBRARY</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="/settings">SETTINGS</a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="/logout">SIGN OUT</a>
-						<% } %>
-					</span>
+			<div id="banner">
+				<div id="bannerContents">
+					<div id="bannerNestedContents">
+						<a href="#" id="menuButton">MENU</a>
+					</div>
 				</div>
 			</div>
-		</div>
-		<div id="content">
-			<% if (!user) { %>
-			<div style="text-align: center">
-			  <a href="/auth/google"><img src="/images/btn_google_signin_dark_normal_web.png" alt="Login with Google"></a>
+			<div class="navbar">
+				<div id="bannerTitleContainer">
+					<div id="bannerTitleContents">
+						<div id="bannerTitleNestedContents">
+							<span id="bannerTitle"><%= process.env.WEB_TITLE || '💩log' %></span>
+						</div>
+					</div>
+				</div>
+				<% if (user) { %>
+				<a class="navPanel" href="/user">
+					<div class="navPanelContainer">
+						<%= user.isAdmin ? 'ADMIN HOME' : 'HOME' %>
+					</div>
+				</a>
+				<!--
+				<a class="navPanel" href="/category">
+					<div class="navPanelContainer">
+						YOUR CATEGORY
+					</div>
+				</a>
+				<a class="navPanel" href="/library">
+					<div class="navPanelContainer">
+						LIBRARY
+					</div>
+				</a>
+				<a class="navPanel" href="/settings">
+					<div class="navPanelContainer">
+						SETTINGS
+					</div>
+				</a>
+				-->
+				<a class="navPanel" href="/logout">
+					<div class="navPanelContainer">
+						SIGN OUT
+					</div>
+				</a>
+				<% } %>
 			</div>
-			<% } %>
-			<%- body %>
+
+			<div class="contentContainer">
+				<div class="content-wrapper" id="content">
+					<% if (!user) { %>
+					<div style="text-align: center">
+						<a href="/auth/google"><img src="/images/btn_google_signin_dark_normal_web.png" alt="Login with Google"></a>
+					</div>
+					<% } %>
+					<%- body %>
+				</div>
 		</div>
 	</body>
 </html>
