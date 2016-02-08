@@ -1,7 +1,19 @@
 <% layout('layout') %>
+<script>
+  $(function() {
+    <% include userGradesJavascript %>
+  });
+</script>
 <div class="card">
   <div class="cardContents">
-    <div class="cardTitle">ACADEMIC REPORT</div>
-    COMING SOON
+    <div class="cardTitle">SUBMIT AN ACADEMIC REPORT</div>
+    <br>
+    <% reportFields.forEach(function(reportField) { %>
+      <%= reportField %><br>
+      <textarea class="reportField"></textarea><br>
+      <br>
+      <br>
+    <% }); %>
+    <% include userGrades %>
   </div>
 </div>

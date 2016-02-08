@@ -2,24 +2,11 @@
 <script>
   var classes = {};
   $(document).ready(function() {
-    var semesterTable = $('#semesterClasses').DataTable({
-      bPaginate: false,
-      bFilter: false,
-      bInfo: false
-    });
+
     var userLogsTable = $('#userLogsTable').DataTable({
       bPaginate: false,
       bFilter: false,
       bInfo: false
-    });
-    $('#userClassDialog').dialog({
-      modal: true,
-      autoOpen: false
-    });
-
-    $('#dropClassDialog').dialog({
-      modal: true,
-      autoOpen: false
     });
 
     $('#newClassDialog').dialog({
@@ -36,6 +23,10 @@
       modal: true,
       autoOpen: false
     });
+
+    var reportSubmitButtonClicked = function() {
+      location.href = '/report?index=' + $(this).data('index') + '&frequency=' + $(this).data('frequency');
+    };
 
     $('#semesterSelector').change(function() {
       $.ajax({
@@ -61,27 +52,16 @@
             }),
             success: function(data) {}
           });
-          semesterTable.clear().draw();
+          flushClassTable();
           classes = data.classes;
           classes.forEach(function(fClass) {
-            semesterTable.row.add([
-              '<a class="gradeUserButton" id="gradeUserButton_' + fClass.id + '" data-class="' + fClass.id + '" href="#">' + fClass.classCode + ' ' + fClass.classIdentifier + '</a>',
-              '<select name="grade" class="gradeSelector" id="gradeSelector_' + fClass.id + '" data-class="' + fClass.id + '">'
-              <% gradeOptions.forEach(function(gradeOption, x) { %>
-              + '<option value="<%= x %>"><%= gradeOption %></option>'
-              <% }); %>
-              + '</select>',
-              '<a class="gradeDropButton" id="gradeDropButton_' + fClass.id + '" data-class="' + fClass.id + '" href="#">DROP</a>'
-            ]).draw();
-            $('#gradeSelector_' + fClass.id + ' option')[fClass.grade].selected = true;
-            $('#gradeSelector_' + fClass.id).change(gradeSelectorChanged);
-            $('#gradeUserButton_' + fClass.id).click(userButtonClick);
-            $('#gradeDropButton_' + fClass.id).click(dropButtonClick);
+            addClassToClassTable(fClass);
           });
           $('.reports').html('');
           data.reportDates.forEach(function(reportDate) {
             if (reportDate.submittable) {
-              $('.reports').append('<button class="submitButton">SUBMIT ACADEMIC REPORT <span style="font-size: 0.7em;">DUE ' + reportDate.dueDate.toUpperCase() + '</span></button><br>');
+              $('.reports').append('<button class="submitButton" id="reportSubmitButton_' + reportDate.index + '_' + reportDate.frequency + '" data-index="' + reportDate.index + '" data-frequency="' + reportDate.frequency + '">SUBMIT ACADEMIC REPORT <span style="font-size: 0.7em;">DUE ' + reportDate.dueDate.toUpperCase() + '</span></button><br>');
+              $('#reportSubmitButton_' + reportDate.index + '_' + reportDate.frequency).click(reportSubmitButtonClicked);
             }
           });
         }
@@ -140,20 +120,6 @@
           <% } %>
           $('#semesterSelector').change();
         }
-      });
-    };
-
-    var gradeSelectorChanged = function() {
-      var self = this;
-      $.ajax({
-        url: '/api/updateClassInstance',
-        method: 'PUT',
-        contentType: 'application/json; charset=utf-8',
-        data: JSON.stringify({
-          grade: $(self).val(),
-          id: $(self).data('class')
-        }),
-        success: function(data) {}
       });
     };
 
@@ -250,15 +216,6 @@
       event.stopPropagation();
     };
 
-    var dropButtonClick = function(event) {
-      $('#dropClassExcuse').val('');
-      dropClassValidation();
-      $('#dropClassDialog').dialog('open');
-      $('#dropClassID').val($(this).data('class'));
-      event.preventDefault();
-      event.stopPropagation();
-    };
-
     var newClassValidation = function() {
       if ($('#newClassIdentifier').val() && $('#newClassCRN').val()) {
         $('#newClassSubmit').prop('disabled', false);
@@ -279,16 +236,6 @@
     };
 
     $('#hoursDescription').on('keyup', logHoursValidation);
-
-    var dropClassValidation = function() {
-      if ($('#dropClassExcuse').val()) {
-        $('#dropClassSubmit').prop('disabled', false);
-      } else {
-        $('#dropClassSubmit').prop('disabled', true);
-      }
-    };
-
-    $('#dropClassExcuse').on('keyup', dropClassValidation);
 
     $('#newClassButton').click(function(event) {
       $('#newClassIdentifier').val('');
@@ -321,22 +268,6 @@
       });
     });
 
-    $('#dropClassSubmit').click(function() {
-      $.ajax({
-        url: '/api/dropClassInstance',
-        method: 'POST',
-        contentType: 'application/json; charset=utf-8',
-        data: JSON.stringify({
-          excuse: $('#dropClassExcuse').val(),
-          id: $('#dropClassID').val()
-        }),
-        success: function(data) {
-          $('#semesterSelector').change();
-          $('#dropClassDialog').dialog('close');
-        }
-      });
-    });
-
     $('#newClassSubmit').click(function() {
       $.ajax({
         url: '/api/newClassInstance',
@@ -357,6 +288,9 @@
     });
     $('#semesterSwitchContainer').appendTo($('.navbar'));
     $('.navPanelStats').appendTo($('.navbar'));
+
+    <% include userGradesJavascript %>
+
     getSemesters('', '');
     getLogs();
   });
@@ -393,16 +327,7 @@
   <div class="cardContents">
     <div class="fabLeft">
       <div class="cardTitle">CLASSES</div>
-      <table id="semesterClasses">
-        <thead>
-          <tr>
-            <th></th>
-            <th></th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <% include userGrades %>
     </div>
     <button id="newClassButton" class="floatingActionButton">+</button>
   </div>
@@ -463,18 +388,6 @@
   </select><br>
   <br>
   <button class="submitButton" id="newClassSubmit">SUBMIT</button>
-</div>
-
-<div id="userClassDialog" title="HELP">
-  COMING SOON<br>
-  <div id="helpClassUsers"></div>
-</div>
-
-<div id="dropClassDialog" title="DROP CLASS">
-  <input type="hidden" id="dropClassID" value="">
-  <input type="text" id="dropClassExcuse" placeholder="Why did you drop this class?"><br>
-  <br>
-  <button class="submitButton" id="dropClassSubmit">SUBMIT</button>
 </div>
 
 <div id="logHoursMasterDialog" title="LOG HOURS">

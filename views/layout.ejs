@@ -35,6 +35,7 @@
 					</div>
 				</div>
 				<% if (user) { %>
+				<% if (user.organization) { %>
 				<a class="navPanel" href="/user">
 					<div class="navPanelContainer">
 						<%= user.isAdmin ? 'ADMIN HOME' : 'HOME' %>
@@ -51,12 +52,13 @@
 						LIBRARY
 					</div>
 				</a>
+				-->
 				<a class="navPanel" href="/settings">
 					<div class="navPanelContainer">
 						SETTINGS
 					</div>
 				</a>
-				-->
+				<% } %>
 				<a class="navPanel" href="/logout">
 					<div class="navPanelContainer">
 						SIGN OUT

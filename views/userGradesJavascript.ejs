@@ -1,0 +1,84 @@
+$('#userClassDialog').dialog({
+  modal: true,
+  autoOpen: false
+});
+
+$('#dropClassDialog').dialog({
+  modal: true,
+  autoOpen: false
+});
+
+var semesterTable = $('#semesterClasses').DataTable({
+  bPaginate: false,
+  bFilter: false,
+  bInfo: false
+});
+
+$('#dropClassSubmit').click(function() {
+  $.ajax({
+    url: '/api/dropClassInstance',
+    method: 'POST',
+    contentType: 'application/json; charset=utf-8',
+    data: JSON.stringify({
+      excuse: $('#dropClassExcuse').val(),
+      id: $('#dropClassID').val()
+    }),
+    success: function(data) {
+      $('#semesterSelector').change();
+      $('#dropClassDialog').dialog('close');
+    }
+  });
+});
+
+var dropClassValidation = function() {
+  if ($('#dropClassExcuse').val()) {
+    $('#dropClassSubmit').prop('disabled', false);
+  } else {
+    $('#dropClassSubmit').prop('disabled', true);
+  }
+};
+
+var dropButtonClick = function(event) {
+  $('#dropClassExcuse').val('');
+  dropClassValidation();
+  $('#dropClassDialog').dialog('open');
+  $('#dropClassID').val($(this).data('class'));
+  event.preventDefault();
+  event.stopPropagation();
+};
+
+var gradeSelectorChanged = function() {
+  var self = this;
+  $.ajax({
+    url: '/api/updateClassInstance',
+    method: 'PUT',
+    contentType: 'application/json; charset=utf-8',
+    data: JSON.stringify({
+      grade: $(self).val(),
+      id: $(self).data('class')
+    }),
+    success: function(data) {}
+  });
+};
+
+var flushClassTable = function() {
+  semesterTable.clear().draw();
+};
+
+var addClassToClassTable = function(fClass) {
+  semesterTable.row.add([
+    '<a class="gradeUserButton" id="gradeUserButton_' + fClass.id + '" data-class="' + fClass.id + '" href="#">' + fClass.classCode + ' ' + fClass.classIdentifier + '</a>',
+    '<select name="grade" class="gradeSelector" id="gradeSelector_' + fClass.id + '" data-class="' + fClass.id + '">'
+    <% gradeOptions.forEach(function(gradeOption, x) { %>
+    + '<option value="<%= x %>"><%= gradeOption %></option>'
+    <% }); %>
+    + '</select>',
+    '<a class="gradeDropButton" id="gradeDropButton_' + fClass.id + '" data-class="' + fClass.id + '" href="#">DROP</a>'
+  ]).draw();
+  $('#gradeSelector_' + fClass.id + ' option')[fClass.grade].selected = true;
+  $('#gradeSelector_' + fClass.id).change(gradeSelectorChanged);
+  $('#gradeUserButton_' + fClass.id).click(userButtonClick);
+  $('#gradeDropButton_' + fClass.id).click(dropButtonClick);
+};
+
+$('#dropClassExcuse').on('keyup', dropClassValidation);
