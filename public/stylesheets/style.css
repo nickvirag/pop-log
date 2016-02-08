@@ -77,6 +77,23 @@ table {
   font-size: 2em;
   font-family: 'Lobster', cursive;
 }
+#siteTitle {
+  font-size: 5em;
+  font-family: 'Lobster', cursive;
+  color: white;
+}
+#loginPage {
+  background-color: #B71C1C;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  position: absolute;
+  display: table;
+}
+#loginPageContents {
+  display: table-cell;
+  vertical-align: middle;
+}
 .contentContainer {
   margin-top: 100px;
   margin-left: 0px;
