@@ -171,51 +171,6 @@
       $('#logHoursMasterDialog').dialog('open');
     });
 
-    var userButtonClick = function(event) {
-      var self = this;
-      $.ajax({
-        url: '/api/getClassHelp',
-        method: 'GET',
-        contentType: 'application/json; charset=utf-8',
-        data: {
-          user: '<%= user._id %>',
-          id: $(self).data('class')
-        },
-        success: function(data) {
-          $('#helpClassUsers').empty();
-          // if (data.websites) {
-          //   data.websites.forEach(function(website, index) {
-          //     $('<a>',{
-          //       text: website.title,
-          //       href: website.url,
-          //       target: '_blank'
-          //     }).appendTo('#helpClassWebsites');
-          //     $('#helpClassWebsites').append(' ');
-          //     $('<a>',{
-          //       text: 'LOG',
-          //       href: '#',
-          //       class: 'logHelp',
-          //       id: 'logHelp_' + index
-          //     }).appendTo('#helpClassWebsites');
-          //     $('#helpClassWebsites').append('<br>');
-          //     $('#logHelp_' + index).click(function(event) {
-          //       $('#websiteInstance').val($(self).data('class'));
-          //       $('#websiteTitle').val(website.title);
-          //       $('#websiteURL').val(website.url);
-          //       $('#websiteID').val(website.id);
-          //       $('#logWebsiteDialog').dialog('open');
-          //       event.preventDefault();
-          //       event.stopPropagation();
-          //     });
-          //   });
-          // }
-          $('#userClassDialog').dialog('open');
-        }
-      });
-      event.preventDefault();
-      event.stopPropagation();
-    };
-
     var newClassValidation = function() {
       if ($('#newClassIdentifier').val() && $('#newClassCRN').val()) {
         $('#newClassSubmit').prop('disabled', false);

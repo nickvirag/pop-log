@@ -15,6 +15,7 @@ var HelpInstance = require('../models/helpinstance.js');
 var Class = require('../models/class.js');
 var Organization = require('../models/organization.js');
 var Category = require('../models/category.js');
+var Report = require('../models/report.js');
 
 var builder = require('../helpers/builder');
 var prefs = require('../helpers/prefs');
@@ -621,6 +622,43 @@ exports.getActiveUsers = function(req, res) {
     } else {
       res.send('error');
     }
+  } else {
+    res.send('error');
+  }
+};
+
+exports.postNewReport = function(req, res) {
+  var data = req.body;
+  if (data.fields && data.index && data.reportFrequency) {
+    builder.currentUserSemester({user: data.user}, function(err, currentSemester, currentSC) {
+      if (!err && currentSemester) {
+        var report = new Report({
+          fieldLabels: data.fieldLabels,
+          fields: data.fields,
+          index: data.index,
+          reportFrequency: data.reportFrequency,
+          user: data.user,
+          semester: currentSemester.id
+        });
+        report.save(function(err) {
+          req.user.reports.unshift(report.id);
+          req.user.updatedAt = builder.currentEpochTime();
+          req.user.save();
+          Semester.findById(currentSemester.id, function(err, semester) {
+            if (!err && semester) {
+              semester.reports.unshift(report.id);
+              semester.updatedAt = builder.currentEpochTime();
+              semester.save();
+              res.send(report);
+            } else {
+              res.send('error');
+            }
+          });
+        });
+      } else {
+        res.send('error');
+      }
+    });
   } else {
     res.send('error');
   }

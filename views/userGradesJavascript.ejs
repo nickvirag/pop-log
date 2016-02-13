@@ -82,3 +82,22 @@ var addClassToClassTable = function(fClass) {
 };
 
 $('#dropClassExcuse').on('keyup', dropClassValidation);
+
+var userButtonClick = function(event) {
+  var self = this;
+  $.ajax({
+    url: '/api/getClassHelp',
+    method: 'GET',
+    contentType: 'application/json; charset=utf-8',
+    data: {
+      user: '<%= user._id %>',
+      id: $(self).data('class')
+    },
+    success: function(data) {
+      $('#helpClassUsers').empty();
+      $('#userClassDialog').dialog('open');
+    }
+  });
+  event.preventDefault();
+  event.stopPropagation();
+};

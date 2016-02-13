@@ -2,11 +2,50 @@
 <script>
   $(function() {
     <% include userGradesJavascript %>
+    $.ajax({
+      url: '/api/getSemester',
+      method: 'GET',
+      contentType: 'application/json; charset=utf-8',
+      data: {
+        semester: '<%= currentUserSemester._id %>',
+        user: '<%= user._id %>'
+      },
+      success: function(data) {
+        flushClassTable();
+        classes = data.classes;
+        classes.forEach(function(fClass) {
+          addClassToClassTable(fClass);
+        });
+      }
+    });
+
+    $('#reportSubmitButton').click(function() {
+      $('#reportSubmitButton').prop('disabled', true);
+      var fields = [];
+      $('.reportField').get().forEach(function(reportField) {
+        fields.push($(reportField).val());
+      });
+      $.ajax({
+        url: '/api/postNewReport',
+        method: 'POST',
+        contentType: 'application/json; charset=utf-8',
+        data: JSON.stringify({
+          user: '<%= user._id %>',
+          fields: fields,
+          reportFields: <%- JSON.stringify(reportFields) %>,
+          index: '<%= index %>',
+          reportFrequency: '<%= reportFrequency %>'
+        }),
+        success: function(data) {
+          location.href = '/user';
+        }
+      });
+    });
   });
 </script>
 <div class="card">
   <div class="cardContents">
-    <div class="cardTitle">SUBMIT AN ACADEMIC REPORT</div>
+    <div class="cardTitle">SUBMIT ACADEMIC REPORT</div>
     <br>
     <% reportFields.forEach(function(reportField) { %>
       <%= reportField %><br>
@@ -14,6 +53,10 @@
       <br>
       <br>
     <% }); %>
+    Update your grades for the following classes:<br>
     <% include userGrades %>
+    <br>
+    <br>
+    <div style="width: 100%; text-align: center;"><button class="submitButton" id="reportSubmitButton">SUBMIT</button></div>
   </div>
 </div>

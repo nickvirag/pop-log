@@ -155,6 +155,8 @@ app.post('/api/dropCategory', ensureAdmin, api.dropCategory);
 
 app.post('/api/postUserGPA', ensureAdmin, api.postUserGPA);
 
+app.post('/api/postNewReport', ensureAuthenticatedAndUser, api.postNewReport);
+
 app.post('/api/setReportFields', ensureAdmin, api.setReportFields);
 
 app.post('/api/addReportField', ensureAdmin, api.addReportField);

@@ -10,6 +10,7 @@ var Category = require('../models/category.js');
 var Organization = require('../models/organization.js');
 var HelpInstance = require('../models/helpinstance.js');
 var Class = require('../models/class.js');
+var Report = require('../models/report.js');
 
 var prefs = require('./prefs');
 
@@ -141,16 +142,25 @@ exports.userReportDetails = function(data, callback) {
                 var reportDueDates = [];
                 var isNextReport = false;
 
-                var addToReport = function(reportDueDate) {
+                var readReports = [];
+
+                var addToReport = function(reportDueDate, index) {
                   var days = Math.round((today.getTime() - reportDueDate.getTime()) / 86400000);
                   var submitted = false;
+                  for (var x = 0; x < readReports.length; x ++) {
+                    var report = readReports[x];
+                    if (report.index == index && report.frequency == category.reportFrequency) {
+                      submitted = true;
+                      break;
+                    }
+                  }
                   var submittable = Math.abs(days) <= 7 && !submitted;
                   if (submittable || isNextReport) {
                     reportDueDates.push({
                       dueDate: dateFormat(reportDueDate, 'mmm d'),
                       submittable: submittable,
                       overdue: days > 0 && !submitted,
-                      index: reportDueDates.length,
+                      index: index,
                       frequency: category.reportFrequency,
                       isNextReport: isNextReport
                     });
@@ -158,24 +168,38 @@ exports.userReportDetails = function(data, callback) {
                   isNextReport = !isNextReport && submitted;
                 };
 
-                if (category.reportFrequency == 0) {
-                  saturdays.forEach(function(day) {
-                    addToReport(day);
-                  });
-                } else if (category.reportFrequency == 1) {
-                  saturdays.forEach(function(day, index) {
-                    if (index % 2 == 1) {
-                      addToReport(day);
-                    }
-                  });
-                } else if (category.reportFrequency == 2) {
+                exports.arrayToObjects(Report, semester.reports, function(err, reports) {
 
-                } else if (category.reportFrequency == 3) {
-                  addToReport(saturdays[Math.floor(saturdays.length / 2)]);
-                } else if (category.reportFrequency == 4) {
-                  addToReport(saturdays[saturdays.length - 1]);
-                }
-                callback(null, reportDueDates);
+                  if (reports) {
+                    reports.forEach(function(report) {
+                      readReports.push({
+                        index: report.index,
+                        frequency: report.reportFrequency
+                      });
+                    });
+                  }
+
+                  if (category.reportFrequency == 0) {
+                    saturdays.forEach(function(day, index) {
+                      addToReport(day, index);
+                    });
+                  } else if (category.reportFrequency == 1) {
+                    var rIndex = 0;
+                    saturdays.forEach(function(day, index) {
+                      if (index % 2 == 1) {
+                        addToReport(day, rIndex);
+                        rIndex ++;
+                      }
+                    });
+                  } else if (category.reportFrequency == 2) {
+
+                  } else if (category.reportFrequency == 3) {
+                    addToReport(saturdays[Math.floor(saturdays.length / 2)], 0);
+                  } else if (category.reportFrequency == 4) {
+                    addToReport(saturdays[saturdays.length - 1], 0);
+                  }
+                  callback(null, reportDueDates);
+                });
               } else {
                 callback('error', null);
               }
