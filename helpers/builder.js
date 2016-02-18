@@ -138,88 +138,92 @@ exports.userReportDetails = function(data, callback) {
           if (!err && semester && semesterContainer) {
             exports.getCategoryFromSemester({semester: semester.id}, function(err, category) {
               if (!err && category) {
-                var today = new Date();
-                var startDate = new Date();
-                var endDate = new Date();
+                if (category.reportsRequired) {
+                  var today = new Date();
+                  var startDate = new Date();
+                  var endDate = new Date();
 
-                startDate.setMonth(semesterContainer.startMonth - 1);
-                startDate.setDate(semesterContainer.startDay);
-                startDate.setHours(0, 0, 0, 0);
-                endDate.setMonth(semesterContainer.endMonth - 1);
-                endDate.setDate(semesterContainer.endDay);
-                endDate.setHours(23, 59, 59, 999);
+                  startDate.setMonth(semesterContainer.startMonth - 1);
+                  startDate.setDate(semesterContainer.startDay);
+                  startDate.setHours(0, 0, 0, 0);
+                  endDate.setMonth(semesterContainer.endMonth - 1);
+                  endDate.setDate(semesterContainer.endDay);
+                  endDate.setHours(23, 59, 59, 999);
 
-                var saturdays = [];
-                var saturday = startDate;
+                  var saturdays = [];
+                  var saturday = startDate;
 
-                saturday.setDate(saturday.getDate() - saturday.getDay() + 6);
-                saturday.setHours(23, 59, 59, 999);
+                  saturday.setDate(saturday.getDate() - saturday.getDay() + 6);
+                  saturday.setHours(23, 59, 59, 999);
 
-                for(; saturday < endDate; saturday.setDate(saturday.getDate() + 7)) {
-                  saturdays.push(new Date(saturday));
-                }
-
-                var reportDueDates = [];
-                var isNextReport = false;
-
-                var readReports = [];
-
-                var addToReport = function(reportDueDate, index) {
-                  var days = Math.round((today.getTime() - reportDueDate.getTime()) / 86400000);
-                  var submitted = false;
-                  for (var x = 0; x < readReports.length; x ++) {
-                    var report = readReports[x];
-                    if (report.index == index && report.frequency == category.reportFrequency) {
-                      submitted = true;
-                      break;
-                    }
-                  }
-                  var submittable = Math.abs(days) <= 7 && !submitted;
-                  if (submittable || isNextReport) {
-                    reportDueDates.push({
-                      dueDate: dateFormat(reportDueDate, 'mmm d'),
-                      submittable: submittable,
-                      overdue: days > 0 && !submitted,
-                      index: index,
-                      frequency: category.reportFrequency,
-                      isNextReport: isNextReport
-                    });
-                  }
-                  isNextReport = !isNextReport && submitted;
-                };
-
-                exports.arrayToObjects(Report, semester.reports, function(err, reports) {
-
-                  if (reports) {
-                    reports.forEach(function(report) {
-                      readReports.push({
-                        index: report.index,
-                        frequency: report.reportFrequency
-                      });
-                    });
+                  for(; saturday < endDate; saturday.setDate(saturday.getDate() + 7)) {
+                    saturdays.push(new Date(saturday));
                   }
 
-                  if (category.reportFrequency == 0) {
-                    saturdays.forEach(function(day, index) {
-                      addToReport(day, index);
-                    });
-                  } else if (category.reportFrequency == 1) {
-                    var rIndex = 0;
-                    saturdays.forEach(function(day, index) {
-                      if (index % 2 == 1) {
-                        addToReport(day, rIndex);
-                        rIndex ++;
+                  var reportDueDates = [];
+                  var isNextReport = false;
+
+                  var readReports = [];
+
+                  var addToReport = function(reportDueDate, index) {
+                    var days = Math.round((today.getTime() - reportDueDate.getTime()) / 86400000);
+                    var submitted = false;
+                    for (var x = 0; x < readReports.length; x ++) {
+                      var report = readReports[x];
+                      if (report.index == index && report.frequency == category.reportFrequency) {
+                        submitted = true;
+                        break;
                       }
-                    });
-                  } else if (category.reportFrequency == 2) {
+                    }
+                    var submittable = Math.abs(days) <= 7 && !submitted;
+                    if (submittable || isNextReport) {
+                      reportDueDates.push({
+                        dueDate: dateFormat(reportDueDate, 'mmm d'),
+                        submittable: submittable,
+                        overdue: days > 0 && !submitted,
+                        index: index,
+                        frequency: category.reportFrequency,
+                        isNextReport: isNextReport
+                      });
+                    }
+                    isNextReport = !isNextReport && submitted;
+                  };
 
-                  } else if (category.reportFrequency == 3) {
-                    addToReport(saturdays[Math.floor(saturdays.length / 2)], 0);
-                  } else if (category.reportFrequency == 4) {
-                    addToReport(saturdays[saturdays.length - 1], 0);
-                  }
-                  callback(null, reportDueDates);
-                });
+                  exports.arrayToObjects(Report, semester.reports, function(err, reports) {
+
+                    if (reports) {
+                      reports.forEach(function(report) {
+                        readReports.push({
+                          index: report.index,
+                          frequency: report.reportFrequency
+                        });
+                      });
+                    }
+
+                    if (category.reportFrequency == 0) {
+                      saturdays.forEach(function(day, index) {
+                        addToReport(day, index);
+                      });
+                    } else if (category.reportFrequency == 1) {
+                      var rIndex = 0;
+                      saturdays.forEach(function(day, index) {
+                        if (index % 2 == 1) {
+                          addToReport(day, rIndex);
+                          rIndex ++;
+                        }
+                      });
+                    } else if (category.reportFrequency == 2) {
+
+                    } else if (category.reportFrequency == 3) {
+                      addToReport(saturdays[Math.floor(saturdays.length / 2)], 0);
+                    } else if (category.reportFrequency == 4) {
+                      addToReport(saturdays[saturdays.length - 1], 0);
+                    }
+                    callback(null, reportDueDates);
+                  });
+                } else {
+                  callback(null, null);
+                }
               } else {
                 callback('error', null);
               }
