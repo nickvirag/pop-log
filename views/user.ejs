@@ -60,8 +60,8 @@
           $('.reports').html('');
           data.reportDates.forEach(function(reportDate) {
             if (reportDate.submittable) {
-              $('.reports').append('<button class="submitButton reportSubmitButton" id="reportSubmitButton_' + reportDate.index + '_' + reportDate.frequency + '" data-index="' + reportDate.index + '" data-frequency="' + reportDate.frequency + '">SUBMIT REPORT <span style="font-size: 0.7em;">DUE ' + reportDate.dueDate.toUpperCase() + '</span></button>');
-              $('#reportSubmitButton_' + reportDate.index + '_' + reportDate.frequency).click(reportSubmitButtonClicked);
+              // $('.reports').append('<button class="submitButton reportSubmitButton" id="reportSubmitButton_' + reportDate.index + '_' + reportDate.frequency + '" data-index="' + reportDate.index + '" data-frequency="' + reportDate.frequency + '">SUBMIT REPORT <span style="font-size: 0.7em;">DUE ' + reportDate.dueDate.toUpperCase() + '</span></button>');
+              // $('#reportSubmitButton_' + reportDate.index + '_' + reportDate.frequency).click(reportSubmitButtonClicked);
             }
           });
         }
