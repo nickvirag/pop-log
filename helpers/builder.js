@@ -110,6 +110,26 @@ exports.currentUserSemester = function(data, callback) {
   }
 };
 
+exports.currentUserCategory = function(data, callback) {
+  if (data.user) {
+    exports.currentUserSemester({user: data.user.id}, function(err, semester, semesterContainer) {
+      if (!err && semester && semesterContainer) {
+        exports.getCategoryFromSemester({semester: semester.id}, function(err, category) {
+          if (!err && category) {
+            callback(null, category);
+          } else {
+            callback('error 3', null);
+          }
+        });
+      } else {
+        callback('error 2', null);
+      }
+    });
+  } else {
+    callback('error 1', null);
+  }
+};
+
 exports.userReportDetails = function(data, callback) {
   if (data.user && data.organization) {
     User.findById(data.user, function(err, user) {

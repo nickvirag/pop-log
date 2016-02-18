@@ -147,7 +147,6 @@ a.navPanel {
 }
 .reports {
   text-align: center;
-  padding-bottom: 40px;
 }
 .submitButton {
   background-color: #F44336;
@@ -157,6 +156,9 @@ a.navPanel {
   box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
   padding: 10px;
   font-size: 1em;
+}
+.reportSubmitButton {
+  margin: 20px 10px 0px 10px;
 }
 .submitButton:disabled {
   background-color: grey;
@@ -189,6 +191,18 @@ a.navPanel {
   font-size: 1.5em;
   color: #BDBDBD;
   margin-bottom: 10px;
+}
+.statsCard {
+  background-color: #263238;
+  width: 100%;
+  text-align: left;
+  border-radius: 10px;
+  margin-bottom: 40px;
+}
+.statsCardContents {
+  padding: 40px;
+  position: relative;
+  color: white;
 }
 .addButtonContainer {
   text-align: right;

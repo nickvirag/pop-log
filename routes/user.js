@@ -27,16 +27,19 @@ var renderUser = function(res, user, isNotUser) {
       prefs.getCourseOptions(user.organization, function(err, courseOptions) {
         prefs.getTrimesterOptions(user.organization, function(err, trimesterOptions) {
           prefs.getCurrentTrimester(user.organization, function(err, currentTrimester) {
-            res.render('user', {
-              user: user,
-              isNotUser: isNotUser,
-              gradeOptions: gradeOptions,
-              yearOptions: prefs.getYearOptions(),
-              courseOptions: courseOptions,
-              trimesterOptions: trimesterOptions,
-              currentTrimester: currentTrimester,
-              lastSunday: dateFormat(lastSunday, prefs.getDateFormat()),
-              helpInstances: helpInstances
+            builder.currentUserCategory({user: user}, function(err, category) {
+              res.render('user', {
+                user: user,
+                isNotUser: isNotUser,
+                gradeOptions: gradeOptions,
+                yearOptions: prefs.getYearOptions(),
+                courseOptions: courseOptions,
+                trimesterOptions: trimesterOptions,
+                currentTrimester: currentTrimester,
+                lastSunday: dateFormat(lastSunday, prefs.getDateFormat()),
+                helpInstances: helpInstances,
+                category: category
+              });
             });
           });
         });

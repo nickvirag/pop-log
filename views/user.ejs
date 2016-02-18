@@ -60,7 +60,7 @@
           $('.reports').html('');
           data.reportDates.forEach(function(reportDate) {
             if (reportDate.submittable) {
-              $('.reports').append('<button class="submitButton" id="reportSubmitButton_' + reportDate.index + '_' + reportDate.frequency + '" data-index="' + reportDate.index + '" data-frequency="' + reportDate.frequency + '">SUBMIT ACADEMIC REPORT <span style="font-size: 0.7em;">DUE ' + reportDate.dueDate.toUpperCase() + '</span></button><br>');
+              $('.reports').append('<button class="submitButton reportSubmitButton" id="reportSubmitButton_' + reportDate.index + '_' + reportDate.frequency + '" data-index="' + reportDate.index + '" data-frequency="' + reportDate.frequency + '">SUBMIT REPORT <span style="font-size: 0.7em;">DUE ' + reportDate.dueDate.toUpperCase() + '</span></button>');
               $('#reportSubmitButton_' + reportDate.index + '_' + reportDate.frequency).click(reportSubmitButtonClicked);
             }
           });
@@ -253,31 +253,42 @@
 <div class="navPanelContainer navPanelBase" id="semesterSwitchContainer">
   <select name="semester" id="semesterSelector"></select>&nbsp;&nbsp;&nbsp;<button id="newSemesterButton">+</button>
 </div>
-<div class="navPanelStats">
-  <table id="userStats">
-    <thead>
-      <tr>
-        <th></th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><%= isNotUser ? user.displayName.toUpperCase() + '\'S ' : '' %>CUM GPA</td>
-        <td><span id="semesterCumulativeGPA">---</span></td>
-      </tr>
-      <tr>
-        <td><%= isNotUser ? user.displayName.toUpperCase() + '\'S ' : '' %>SEM GPA</td>
-        <td><span id="semesterCalculatedGPA">---</span></td>
-      </tr>
-      <tr>
-        <td>HOURS</td>
-        <td><span id="hoursLogged">---</span>/-</td>
-      </tr>
-    </tbody>
-  </table>
+<div class="statsCard">
+  <div class="statsCardContents">
+    <table id="userStats">
+      <thead>
+        <tr>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><%= isNotUser ? user.displayName.toUpperCase() + '\'S ' : '' %>CUMULATIVE GPA</td>
+          <td><span id="semesterCumulativeGPA">---</span></td>
+        </tr>
+        <tr>
+          <td><%= isNotUser ? user.displayName.toUpperCase() + '\'S ' : '' %>SEMESTER GPA</td>
+          <td><span id="semesterCalculatedGPA">---</span></td>
+        </tr>
+        <% if (category) { %>
+        <tr>
+          <td>CATEGORY</td>
+          <td><%= category.label %></td>
+        </tr>
+        <% } %>
+        <tr>
+          <td>WEEKLY STUDY HOURS</td>
+          <td><span id="hoursLogged">---</span>
+            <% if (category && category.studyHoursRequired) { %>
+              /<%= category.minimumStudyHours %></td>
+            <% } %>
+        </tr>
+      </tbody>
+    </table>
+    <div class="reports"></div>
+  </div>
 </div>
-<div class="reports"></div>
 <div class="card">
   <div class="cardContents">
     <div class="fabLeft">
