@@ -273,6 +273,7 @@ exports.getActiveUsersByTrimester = function(req, res) {
                                   }, function(err, logs) {
                                     var hours = 0;
                                     logs.forEach(function(log) {
+                                      console.log('adding ' + JSON.stringify(log) + ' to week of ' + week + ' for user ' + user.displayName);
                                       hours += log.hours;
                                     });
                                     response(null, hours);
