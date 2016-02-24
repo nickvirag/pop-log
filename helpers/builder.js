@@ -176,9 +176,15 @@ exports.userReportDetails = function(data, callback) {
                       }
                     }
                     var submittable = Math.abs(days) <= 7 && !submitted;
+                    var availableDate = new Date(reportDueDate);
+                    availableDate.setDate(availableDate.getDate() - 7);
+                    console.log( today + ' ' + reportDueDate + ' ' + isNextReport + ' ' + (today < reportDueDate));
+                    isNextReport = isNextReport && (today < reportDueDate) && !submitted;
                     if (submittable || isNextReport) {
                       reportDueDates.push({
                         dueDate: dateFormat(reportDueDate, 'mmm d'),
+                        availableDateNum: dateFormat(availableDate, 'm/d'),
+                        dueDateNum: dateFormat(reportDueDate, 'm/d'),
                         submittable: submittable,
                         overdue: days > 0 && !submitted,
                         index: index,
@@ -186,7 +192,7 @@ exports.userReportDetails = function(data, callback) {
                         isNextReport: isNextReport
                       });
                     }
-                    isNextReport = !isNextReport && submitted;
+                    isNextReport = submitted || (today > reportDueDate);
                   };
 
                   exports.arrayToObjects(Report, semester.reports, function(err, reports) {

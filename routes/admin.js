@@ -23,7 +23,8 @@ exports.get = function(req, res) {
             user: req.user,
             canSendEmails: canSendEmails,
             currentYear: currentYear,
-            semesterContainers: semesterContainers
+            semesterContainers: semesterContainers,
+            organization: organization
           });
         });
       } else {

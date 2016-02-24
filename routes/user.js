@@ -17,28 +17,32 @@ var Semester = require('../models/semester.js');
 var HelpInstance = require('../models/helpinstance.js');
 var ClassInstance = require('../models/classinstance.js');
 var Class = require('../models/class.js');
+var Organization = require('../models/organization.js');
 
 var renderUser = function(res, user, isNotUser) {
-  builder.arrayToObjects(HelpInstance, user.helpInstances, function(err, helpInstances) {
-    var lastSunday = new Date();
-    lastSunday.setDate(lastSunday.getDate() - lastSunday.getDay());
-    lastSunday.setHours(0, 0, 0, 0);
-    prefs.getGradeOptions(user.organization, function(err, gradeOptions) {
-      prefs.getCourseOptions(user.organization, function(err, courseOptions) {
-        prefs.getTrimesterOptions(user.organization, function(err, trimesterOptions) {
-          prefs.getCurrentTrimester(user.organization, function(err, currentTrimester) {
-            builder.currentUserCategory({user: user}, function(err, category) {
-              res.render('user', {
-                user: user,
-                isNotUser: isNotUser,
-                gradeOptions: gradeOptions,
-                yearOptions: prefs.getYearOptions(),
-                courseOptions: courseOptions,
-                trimesterOptions: trimesterOptions,
-                currentTrimester: currentTrimester,
-                lastSunday: dateFormat(lastSunday, prefs.getDateFormat()),
-                helpInstances: helpInstances,
-                category: category
+  Organization.findById(user.organization, function(err, organization) {
+    builder.arrayToObjects(HelpInstance, user.helpInstances, function(err, helpInstances) {
+      var lastSunday = new Date();
+      lastSunday.setDate(lastSunday.getDate() - lastSunday.getDay());
+      lastSunday.setHours(0, 0, 0, 0);
+      prefs.getGradeOptions(user.organization, function(err, gradeOptions) {
+        prefs.getCourseOptions(user.organization, function(err, courseOptions) {
+          prefs.getTrimesterOptions(user.organization, function(err, trimesterOptions) {
+            prefs.getCurrentTrimester(user.organization, function(err, currentTrimester) {
+              builder.currentUserCategory({user: user}, function(err, category) {
+                res.render('user', {
+                  user: user,
+                  isNotUser: isNotUser,
+                  gradeOptions: gradeOptions,
+                  yearOptions: prefs.getYearOptions(),
+                  courseOptions: courseOptions,
+                  trimesterOptions: trimesterOptions,
+                  currentTrimester: currentTrimester,
+                  lastSunday: dateFormat(lastSunday, prefs.getDateFormat()),
+                  helpInstances: helpInstances,
+                  category: category,
+                  organization: organization
+                });
               });
             });
           });
@@ -46,7 +50,7 @@ var renderUser = function(res, user, isNotUser) {
       });
     });
   });
-}
+};
 
 exports.get = function(req, res) {
   if (req.user.organization) {

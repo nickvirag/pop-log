@@ -33,6 +33,13 @@ table {
   transform: translateY(-50%);
   width: 100%;
 }
+#bannerCenterTitle {
+  text-align: center;
+  /*top: 50%;
+  transform: translateY(-50%);*/
+  display: inline-block;
+  width: 90%;
+}
 #bannerTitleContainer {
   -webkit-box-shadow: inset 0px -135px 4px -134px rgba(0,0,0,0.25);
   -moz-box-shadow: inset 0px -135px 4px -134px rgba(0,0,0,0.25);
@@ -158,7 +165,7 @@ a.navPanel {
   font-size: 1em;
 }
 .reportSubmitButton {
-  margin: 20px 10px 0px 10px;
+  margin: 20px 10px 10px 10px;
 }
 .submitButton:disabled {
   background-color: grey;
@@ -240,9 +247,38 @@ a.navPanel {
 }
 
 #menuButton {
-  float: right;
   visibility: hidden;
-  margin-right: 20px;
+}
+
+.reportField {
+  width: 75%;
+  height: 100px;
+}
+
+.headerLeft {
+  float: left;
+  text-align: left;
+  width: 30%;
+}
+
+.headerCenter {
+  float: left;
+  text-align: center;
+  width: 40%;
+  font-size: 1.2em;
+  line-height: 32px;
+  white-space: nowrap;
+}
+
+.headerRight {
+  float: left;
+  text-align: right;
+  width: 30%;
+}
+
+.iconButton {
+  font-size: 32px;
+  padding-right: 10px;
 }
 
 .visible {
@@ -272,9 +308,4 @@ a.navPanel {
   #menuButton {
     visibility: visible;
   }
-}
-
-.reportField {
-  width: 75%;
-  height: 150px;
 }

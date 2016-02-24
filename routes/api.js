@@ -136,6 +136,34 @@ exports.updateSettings = function(req, res) {
   });
 };
 
+exports.setHoursDueTime = function(req, res) {
+  var data = req.body;
+  if (data.organization && data.hoursDueDay && data.hoursDueTime) {
+    if (req.user.organization == data.organization) {
+      Organization.findById(data.organization, function(err, organization) {
+        if (!err && organization) {
+          organization.hoursDueDay = data.hoursDueDay;
+          var timeSplit = data.hoursDueTime.split(':');
+          if (data.hoursDueDay == '1') {
+            timeSplit[0] += 12;
+          }
+          organization.hoursDueMinutes = (timeSplit[0] * 60) + timeSplit[1];
+          organization.updatedAt = builder.currentEpochTime();
+          organization.save(function(err) {
+            res.send(organization);
+          });
+        } else {
+          res.send('error');
+        }
+      });
+    } else {
+      res.send('error');
+    }
+  } else {
+    res.send('error');
+  }
+};
+
 exports.getClassHelp = function(req, res) {
   var data = req.query;
   if (data.id) {
@@ -212,16 +240,44 @@ exports.getActiveUsersByTrimester = function(req, res) {
                           userObject.isRegistered = true;
                           userObject.categoryLabel = category.label;
                           userObject.categoryID = category.id;
+                          userObject.categoryHours = category.minimumStudyHours;
                           userObject.reportedGPA = matchedSemester.reportedGPA;
                           userObject.semester = matchedSemester.id;
-                          response(null, userObject);
-                        });
+                          userObject.hours = null;
+                          userObject.grades = '';
+
+                          var lastWeek = new Date();
+                          lastWeek.setDate(lastWeek.getDate() - 7);
+
+                          builder.getJSONLogs({
+                            user: userObject.id,
+                            weekOf: (lastWeek.getTime() / 1000)
+                          }, function(err, logs) {
+                            var hours = 0;
+                            logs.forEach(function(log) {
+                              hours += log.hours;
+                            })
+                            userObject.hours = hours;
+                            builder.arrayToObjects(ClassInstance, matchedSemester.classInstances, function(err, classInstances) {
+                              prefs.getGradeOptions(organization.id, function(err, gradeOptions) {
+                                if (!err && gradeOptions) {
+                                  classInstances.forEach(function(classInstance) {
+                                    userObject.grades += ' ' + gradeOptions[classInstance.grade];
+                                  });
+                                }
+                                response(null, userObject);
+                              });
+                            });
+                          });
+                          });
                       } else {
                         userObject.isRegistered = false;
                         userObject.categoryLabel = null;
                         userObject.categoryID = null;
                         userObject.reportedGPA = null;
                         userObject.semester = null;
+                        userObject.hours = null;
+                        userObject.grades = null;
                         response(null, userObject);
                       }
                     } else {

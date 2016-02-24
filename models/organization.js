@@ -11,6 +11,14 @@ var organizationSchema = new mongoose.Schema({
   },
   location: String,
   displayName: String,
+  hoursDueDay: {
+    type: Number,
+    default: 0
+  },
+  hoursDueMinutes: {
+    type: Number,
+    default: 0
+  },
   emailUsername: {
     type: String,
     default: ''

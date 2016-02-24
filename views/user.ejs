@@ -9,6 +9,12 @@
       bInfo: false
     });
 
+    var userStatsTable = $('#userStats').DataTable({
+      bPaginate: false,
+      bFilter: false,
+      bInfo: false
+    });
+
     $('#newClassDialog').dialog({
       modal: true,
       autoOpen: false
@@ -60,8 +66,14 @@
           $('.reports').html('');
           data.reportDates.forEach(function(reportDate) {
             if (reportDate.submittable) {
-              $('.reports').append('<button class="submitButton reportSubmitButton" id="reportSubmitButton_' + reportDate.index + '_' + reportDate.frequency + '" data-index="' + reportDate.index + '" data-frequency="' + reportDate.frequency + '">SUBMIT REPORT <span style="font-size: 0.7em;">DUE ' + reportDate.dueDate.toUpperCase() + '</span></button>');
+              $('.reports').append('<button class="submitButton reportSubmitButton" id="reportSubmitButton_' + reportDate.index + '_' + reportDate.frequency + '" data-index="' + reportDate.index + '" data-frequency="' + reportDate.frequency + '"><span class="fa fa-file-text"></span> DUE ' + reportDate.dueDate.toUpperCase() + '</button>');
               $('#reportSubmitButton_' + reportDate.index + '_' + reportDate.frequency).click(reportSubmitButtonClicked);
+            }
+            if (reportDate.isNextReport) {
+              userStatsTable.row.add([
+                'NEXT REPORT DUE',
+                reportDate.availableDateNum + ' - ' + reportDate.dueDateNum
+              ]).draw(false);
             }
           });
         }
@@ -267,10 +279,10 @@
           <td><%= isNotUser ? user.displayName.toUpperCase() + '\'S ' : '' %>CUMULATIVE GPA</td>
           <td><span id="semesterCumulativeGPA">---</span></td>
         </tr>
-        <tr>
+        <!-- <tr>
           <td><%= isNotUser ? user.displayName.toUpperCase() + '\'S ' : '' %>SEMESTER GPA</td>
           <td><span id="semesterCalculatedGPA">---</span></td>
-        </tr>
+        </tr> -->
         <% if (category) { %>
         <tr>
           <td>CATEGORY</td>
@@ -279,10 +291,9 @@
         <% } %>
         <tr>
           <td>WEEKLY STUDY HOURS</td>
-          <td><span id="hoursLogged">---</span>
-            <% if (category && category.studyHoursRequired) { %>
-              /<%= category.minimumStudyHours %></td>
-            <% } %>
+          <td>
+            <span id="hoursLogged">---</span><%= category && category.studyHoursRequired ? '/' + category.minimumStudyHours : '' %>
+          </td>
         </tr>
       </tbody>
     </table>
