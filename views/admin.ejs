@@ -120,7 +120,7 @@
               user.email,
               '<input id="updateGPA_' + user.id + '" type="text" value="' + (user.reportedGPA ? user.reportedGPA.toFixed(2) : '') + '" data-user="' + user.id + '" ' + gpaData + '>',
               user.grades || '',
-              user.hours ? user.hours + '/' + user.categoryHours : ''
+              user.hours || ''
             ]).draw(false);
             $('#updateGPA_' + user.id).change(updateUserGPA);
           });

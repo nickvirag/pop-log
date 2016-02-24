@@ -206,89 +206,129 @@ exports.getLogs = function(req, res) {
 exports.getActiveUsersByTrimester = function(req, res) {
   var data = req.query;
   if (data.semesterContainer && data.year && data.organization) {
-    Organization.findById(data.organization, function(err, organization) {
-      if (!err && organization) {
-        builder.arrayToObjects(User, organization.users, function(err, users) {
-          if (!err && users) {
-            var calls = [];
-            users.forEach(function(user) {
-              if (user.isActive) {
-                calls.push(function(response) {
-                  builder.arrayToObjects(Semester, user.semesters, function(err, semesters) {
-                    if (!err && semesters) {
-                      var matchFound = {};
-                      var matchedSemester = null;
-                      try {
-                        semesters.forEach(function(semester) {
-                          if (semester.semesterContainer == data.semesterContainer && semester.year == data.year) {
-                            matchedSemester = semester;
-                            throw matchFound;
-                          }
-                        });
-                      } catch(e) {
-                        if (e !== matchFound) {
-                          throw e;
-                        }
-                      }
-                      var userObject = {
-                        displayName: user.displayName,
-                        email: user.email,
-                        id: user.id
-                      };
-                      if (matchedSemester) {
-                        builder.getCategoryFromSemester({semester: matchedSemester.id}, function(err, category) {
-                          userObject.isRegistered = true;
-                          userObject.categoryLabel = category.label;
-                          userObject.categoryID = category.id;
-                          userObject.categoryHours = category.minimumStudyHours;
-                          userObject.reportedGPA = matchedSemester.reportedGPA;
-                          userObject.semester = matchedSemester.id;
-                          userObject.hours = null;
-                          userObject.grades = '';
-
-                          var lastWeek = new Date();
-                          lastWeek.setDate(lastWeek.getDate() - 7);
-
-                          builder.getJSONLogs({
-                            user: userObject.id,
-                            weekOf: (lastWeek.getTime() / 1000)
-                          }, function(err, logs) {
-                            var hours = 0;
-                            logs.forEach(function(log) {
-                              hours += log.hours;
-                            })
-                            userObject.hours = hours;
-                            builder.arrayToObjects(ClassInstance, matchedSemester.classInstances, function(err, classInstances) {
-                              prefs.getGradeOptions(organization.id, function(err, gradeOptions) {
-                                if (!err && gradeOptions) {
-                                  classInstances.forEach(function(classInstance) {
-                                    userObject.grades += ' ' + gradeOptions[classInstance.grade];
-                                  });
-                                }
-                                response(null, userObject);
-                              });
+    SemesterContainer.findById(data.semesterContainer, function(err, semesterContainer) {
+      if (!err && semesterContainer) {
+        Organization.findById(data.organization, function(err, organization) {
+          if (!err && organization) {
+            builder.arrayToObjects(User, organization.users, function(err, users) {
+              if (!err && users) {
+                var calls = [];
+                users.forEach(function(user) {
+                  if (user.isActive) {
+                    calls.push(function(response) {
+                      builder.arrayToObjects(Semester, user.semesters, function(err, semesters) {
+                        if (!err && semesters) {
+                          var matchFound = {};
+                          var matchedSemester = null;
+                          try {
+                            semesters.forEach(function(semester) {
+                              if (semester.semesterContainer == data.semesterContainer && semester.year == data.year) {
+                                matchedSemester = semester;
+                                throw matchFound;
+                              }
                             });
-                          });
-                          });
-                      } else {
-                        userObject.isRegistered = false;
-                        userObject.categoryLabel = null;
-                        userObject.categoryID = null;
-                        userObject.reportedGPA = null;
-                        userObject.semester = null;
-                        userObject.hours = null;
-                        userObject.grades = null;
-                        response(null, userObject);
-                      }
-                    } else {
-                      res.send('error');
-                    }
-                  });
+                          } catch(e) {
+                            if (e !== matchFound) {
+                              throw e;
+                            }
+                          }
+                          var userObject = {
+                            displayName: user.displayName,
+                            email: user.email,
+                            id: user.id
+                          };
+                          if (matchedSemester) {
+                            builder.getCategoryFromSemester({semester: matchedSemester.id}, function(err, category) {
+                              console.log('this far');
+                              userObject.isRegistered = true;
+                              userObject.categoryLabel = category.label;
+                              userObject.categoryID = category.id;
+                              userObject.categoryHours = category.minimumStudyHours;
+                              userObject.reportedGPA = matchedSemester.reportedGPA;
+                              userObject.semester = matchedSemester.id;
+                              userObject.hours = null;
+                              userObject.grades = '';
+
+                              var startWeek = new Date();
+                              var semesterStart = new Date();
+                              var startWeek = new Date();
+                              semesterStart.setMonth(semesterContainer.startMonth - 1);
+                              semesterStart.setDate(semesterContainer.startDay);
+                              var weeks = [];
+                              while (startWeek > semesterStart) {
+                                weeks.unshift(new Date(startWeek));
+                                startWeek.setDate(startWeek.getDate() - 7);
+                              }
+
+                              var hourCalls = [];
+
+                              weeks.forEach(function(week) {
+
+                                console.log('week: ' + week);
+
+                                hourCalls.push(function(response) {
+                                  builder.getJSONLogs({
+                                    user: userObject.id,
+                                    weekOf: (week.getTime() / 1000)
+                                  }, function(err, logs) {
+                                    var hours = 0;
+                                    logs.forEach(function(log) {
+                                      hours += log.hours;
+                                    });
+                                    response(null, hours);
+                                  });
+                                });
+                              });
+
+                              async.series(hourCalls, function(err, hours) {
+                                userObject.hours = hours;
+                                builder.arrayToObjects(ClassInstance, matchedSemester.classInstances, function(err, classInstances) {
+                                  prefs.getGradeOptions(organization.id, function(err, gradeOptions) {
+                                    if (!err && gradeOptions) {
+                                      classInstances.forEach(function(classInstance) {
+                                        userObject.grades += ' ' + gradeOptions[classInstance.grade];
+                                      });
+                                    }
+                                    response(null, userObject);
+                                  });
+                                });
+                              });
+
+
+                              // builder.getJSONLogs({
+                              //   user: userObject.id,
+                              //   weekOf: (lastWeek.getTime() / 1000)
+                              // }, function(err, logs) {
+                              //   var hours = 0;
+                              //   logs.forEach(function(log) {
+                              //     hours += log.hours;
+                              //   });
+                              //
+                              // });
+                            });
+                          } else {
+                            userObject.isRegistered = false;
+                            userObject.categoryLabel = null;
+                            userObject.categoryID = null;
+                            userObject.reportedGPA = null;
+                            userObject.semester = null;
+                            userObject.hours = null;
+                            userObject.grades = null;
+                            response(null, userObject);
+                          }
+                        } else {
+                          res.send('error');
+                        }
+                      });
+                    });
+                  }
                 });
+                async.series(calls, function(err, resp) {
+                  res.send(resp);
+                });
+              } else {
+                res.send('error');
               }
-            });
-            async.series(calls, function(err, resp) {
-              res.send(resp);
             });
           } else {
             res.send('error');
