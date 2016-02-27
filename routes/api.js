@@ -239,7 +239,6 @@ exports.getActiveUsersByTrimester = function(req, res) {
                           };
                           if (matchedSemester) {
                             builder.getCategoryFromSemester({semester: matchedSemester.id}, function(err, category) {
-                              console.log('this far');
                               userObject.isRegistered = true;
                               userObject.categoryLabel = category.label;
                               userObject.categoryID = category.id;
@@ -263,9 +262,6 @@ exports.getActiveUsersByTrimester = function(req, res) {
                               var hourCalls = [];
 
                               weeks.forEach(function(week) {
-
-                                console.log('week: ' + week);
-
                                 hourCalls.push(function(response) {
                                   builder.getJSONLogs({
                                     user: userObject.id,
@@ -273,7 +269,6 @@ exports.getActiveUsersByTrimester = function(req, res) {
                                   }, function(err, logs) {
                                     var hours = 0;
                                     logs.forEach(function(log) {
-                                      console.log('adding ' + JSON.stringify(log) + ' to week of ' + week + ' for user ' + user.displayName);
                                       hours += log.hours;
                                     });
                                     response(null, hours);
@@ -702,7 +697,6 @@ exports.getActiveUsers = function(req, res) {
     if (req.user.organization == data.organization) {
       Organization.findById(data.organization, function(err, organization) {
         if (!err && organization) {
-          console.log(organization.users);
           builder.arrayToObjects(User, organization.users, function(err, users) {
             var activeUsers = [];
             users.forEach(function(user) {

@@ -417,10 +417,9 @@ exports.getJSONLogs = function(data, callback) {
       if (!err && user) {
         exports.arrayToObjects(HelpInstance, user.helpInstances, function(err, helpInstances) {
           var startDate = data.weekOf ? new Date(data.weekOf * 1000) : new Date();
-          var endDate = new Date();
+          var endDate = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate() + 6 - startDate.getDay());
           startDate.setDate(startDate.getDate() - startDate.getDay());
           startDate.setHours(0, 0, 0, 0);
-          endDate.setDate(startDate.getDate() + 6);
           endDate.setHours(23, 59, 59, 999);
           var addLog = function(addHelpInstance, addHelpClassText) {
             var date = new Date(addHelpInstance.completedDate * 1000);
